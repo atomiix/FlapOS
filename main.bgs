@@ -1,0 +1,270 @@
+const VERSION() = "1.0.0"
+const WIFI_MODE_STA =  1
+const WIFI_MODE_AP = 2
+
+export const APP_MODE_CONFIG = 0
+export const APP_MODE_AP = 1
+export const APP_MODE_STA = 2
+export const APP_MODE_CLI = 3
+
+dim info_version_output(127)
+dim port
+dim data
+
+dim mode
+
+dim motor_index
+dim motor_ons(7)
+dim positions(7)
+dim previous_reads(7)
+dim targets(7)
+
+export const HTTP_GET = 0
+export const HTTP_POST = 2
+
+export dim request_data(255)
+export dim request_data_len
+export dim request_method
+export dim request_resource(255)
+export dim request_resource_len
+export dim response(255)
+export dim response_len
+export dim result
+export dim flash_result_len
+export dim flash_result_data(255)
+
+import "config.bgs"
+
+procedure init_motors()
+    motor_index = 0
+    motor_ons(0:4) = $0000
+    motor_ons(4:3) = $000
+    positions(0:4) = $80808080
+    positions(4:3) = $808080
+    targets(0:4) = $25190d1c
+    targets(4:3) = $3b1f13
+    previous_reads(0:4) = $01102040
+    previous_reads(4:3) = $040802
+end
+
+export procedure run()
+    motor_index = 0
+    call hardware_set_soft_timer(25, 0, 1)
+end
+
+procedure show_info()
+    info_version_output(0:26) = "\r\n******* FlapOS *******\r\n"
+    info_version_output(26:15) = "[Info]Version: "
+    memcpy(info_version_output(41), VERSION(0), 5)
+    info_version_output(46:43) = "\r\n[Info]https://github.com/atomiix/FlapOS\r\n"
+    call endpoint_send(0, 89, info_version_output(0:89))
+end
+
+event system_boot(major, minor, patch, build, bootloader_version, tcpip_version, hw)   
+    call show_info()
+    call init_motors()
+    call hardware_io_port_config_direction(1, $b800, $0000) # set leds and 1 motor as outputs
+    call hardware_io_port_write(1, $b000, $b000) # leds off
+
+    call hardware_io_port_config_direction(3, $06f0, $0000) # motors as output
+    call hardware_io_port_config_direction(4, $007f, $007f) # switches as input
+
+    call flash_ps_load(FLASH_PS_KEY_APPL_NUM1)(result, flash_result_len, flash_result_data(0:flash_result_len))
+    mode = flash_result_data(0:1)
+
+    if mode > 3 || mode < 1 then
+        mode = APP_MODE_CONFIG
+    end if
+
+    if mode = APP_MODE_CONFIG || mode = APP_MODE_AP then
+        call sme_set_operating_mode(WIFI_MODE_AP)
+    else
+        call sme_set_operating_mode(WIFI_MODE_STA)
+    end if
+
+    call sme_wifi_on()
+end
+
+procedure turn_motor_ons(index)
+    if index = 0 then
+        call hardware_io_port_write(3, $0400, $0400) # turn on motor
+    end if
+    if index = 1 then
+        call hardware_io_port_write(3, $0200, $0200) # turn on motor
+    end if
+    if index = 2 then
+        call hardware_io_port_write(3, $0080, $0080) # turn on motor
+    end if
+    if index = 3 then
+        call hardware_io_port_write(1, $0800, $0800) # turn on motor
+    end if
+    if index = 4 then
+        call hardware_io_port_write(3, $0010, $0010) # turn on motor
+    end if
+    if index = 5 then
+        call hardware_io_port_write(3, $0020, $0020) # turn on motor
+    end if
+    if index = 6 then
+        call hardware_io_port_write(3, $0040, $0040) # turn on motor
+    end if
+end
+
+procedure read_position(index)
+    if index = 0 then
+        call hardware_io_port_read(4, $0040)(result, port, data)
+    end if
+    if index = 1 then
+        call hardware_io_port_read(4, $0020)(result, port, data)
+    end if
+    if index = 2 then
+        call hardware_io_port_read(4, $0010)(result, port, data)
+    end if
+    if index = 3 then
+        call hardware_io_port_read(4, $0008)(result, port, data)
+    end if
+    if index = 4 then
+        call hardware_io_port_read(4, $0004)(result, port, data)
+    end if
+    if index = 5 then
+        call hardware_io_port_read(4, $0002)(result, port, data)
+    end if
+    if index = 6 then
+        call hardware_io_port_read(4, $0001)(result, port, data)
+    end if
+end
+
+procedure turn_motors_off()
+    call hardware_io_port_write(1, $9000, $9000) # led off
+    call hardware_io_port_write(1, $0800, $0000) # turn off motor
+    call hardware_io_port_write(3, $06f0, $0000) # turn off motors
+end
+
+procedure run_motor(index)
+    if index > 0 then
+        motor_ons(index - 1:1) = 0
+    else
+        motor_ons(6:1) = 0
+    end if
+
+    call read_position(index)
+    if data != $0000 && data != previous_reads(index:1) then
+        positions(index:1) = 0
+    end if
+    previous_reads(index:1) = data
+
+    if memcmp(positions(index), targets(index), 1) then
+        return
+    end if
+
+    if motor_ons(index:1) != 0 then
+        return
+    end if
+
+    call hardware_io_port_write(1, $b000, $0000) # led on
+    call turn_motor_ons(index)
+    motor_ons(index:1) = 1
+
+    if positions(index:1) ^ $80 then
+        positions(index:1) = positions(index:1) + $0001
+    end if
+end
+
+event hardware_soft_timer(handle)
+    if handle = 0 then
+        if memcmp(targets(0), positions(0), 7) != 1 then
+            if motor_index = 0 then
+                call hardware_set_soft_timer(25, 1, 1)
+            else
+                call hardware_set_soft_timer(20, 1, 1)
+            end if
+        end if
+        call run_motor(motor_index)
+        motor_index = motor_index + 1
+        if motor_index = 7 then
+            motor_index = 0
+        end if
+    else
+        call turn_motors_off()
+        call hardware_set_soft_timer(5, 0, 1)
+    end if
+end
+
+import "server.bgs"
+
+procedure connect_to_ssid() 
+    call endpoint_send(0, 27, "[DBG]conneting to ssid...\r\n")
+    call tcpip_configure(0, 0, 0, 1)
+    
+    call flash_ps_load(FLASH_PS_KEY_CLIENT_PW)(result, flash_result_len, flash_result_data(0:flash_result_len))
+    if result = 0 then
+        call sme_set_password(flash_result_len, flash_result_data(0:flash_result_len))
+    end if
+
+    call flash_ps_load(FLASH_PS_KEY_CLIENT_SSID)(result, flash_result_len, flash_result_data(0:flash_result_len))
+    if result = 0 then
+        call sme_connect_ssid(flash_result_len, flash_result_data(0:flash_result_len))
+    else
+        call endpoint_send(0, 20, "[DBG]no ssid found\r\n")
+    end if
+end
+
+event sme_wifi_is_on(state)
+    if mode = APP_MODE_CLI || mode = APP_MODE_STA then
+        call connect_to_ssid()
+    end if
+    if mode = APP_MODE_AP then
+        call start_ap_mode()
+    end if
+    if mode = APP_MODE_CONFIG then
+        call sme_start_scan(0, 0, 0)
+    end if
+end
+
+event sme_ap_mode_started(hw_interface)
+    if mode = APP_MODE_CONFIG then
+        call config_sme_ap_mode_started(hw_interface)
+    end if
+    if mode = APP_MODE_AP then
+        call server_sme_ap_mode_started(hw_interface)
+    end if
+end
+
+event sme_connected(status, hw_interface, bssid)
+    call endpoint_send(0, 20, "[DBG]sme connected\r\n")
+    if mode = APP_MODE_STA then
+        call sta_sme_connected(status, hw_interface, bssid(0:6))
+    end if
+end
+
+event sme_connect_failed(reason, hw_interface)
+    call endpoint_send(0 , 25, "[DBG]sme_connect_failed\r\n")
+    # call start_sta_mode()
+end
+
+event sme_disconnected(reason, hw_interface)
+    call endpoint_send(0 , 23, "[DBG]sme_disconnected\r\n")
+end
+
+event https_api_request(request, method, resource_len, resource_data)
+    call endpoint_send(0, 18, "[DBG]api request\r\n")
+    request_method = method
+    request_resource(0:resource_len) = resource_data(0:resource_len)
+    request_resource_len = resource_len
+    request_data_len = 0
+end
+
+event https_api_request_data(request, data_len, data_data)
+    call endpoint_send(0, 23, "[DBG]api request data\r\n")
+    memcpy(request_data(request_data_len), data_data(0), data_len)
+    request_data_len = request_data_len + data_len
+end
+
+event https_api_request_finished(request)
+    call endpoint_send(0, 23, "[DBG]request finished\r\n")
+    if mode = APP_MODE_CONFIG then
+        call config_https_api_request_finished(request)
+    end if
+    if mode = APP_MODE_STA || mode = APP_MODE_AP then
+        call server_https_api_request_finished(request)
+    end if
+end

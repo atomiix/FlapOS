@@ -1,0 +1,759 @@
+# Lead flap
+const LEAD_BLANK() = "BLANK"
+const LEAD_BLAST() = "BLAST"
+const LEAD_LIKE_RU() = "LIKE_RU"
+const LEAD_LIKE_FR() = "LIKE_FR"
+const LEAD_LIKE_US_EN() = "LIKE_US_EN"
+const LEAD_LIKE_EN() = "LIKE_EN"
+const LEAD_LIKE_JA() = "LIKE_JA"
+const LEAD_LIKE_KO() = "LIKE_KO"
+const LEAD_LIKE_ZH() = "LIKE_ZH"
+const LEAD_FOLLOW_US_ES() = "FOLLOW_US_ES"
+const LEAD_FOLLOW_US_PT() = "FOLLOW_US_PT"
+const LEAD_FOLLOW_US_RU() = "FOLLOW_US_RU"
+const LEAD_FOLLOW_US_FR() = "FOLLOW_US_FR"
+const LEAD_FOLLOW_US_EN() = "FOLLOW_US_EN"
+const LEAD_FOLLOW_US_IT() = "FOLLOW_US_IT"
+const LEAD_FOLLOW_US_DE() = "FOLLOW_US_DE"
+const LEAD_FOLLOW_US_JP() = "FOLLOW_US_JP"
+const LEAD_FOLLOW_US_KO() = "FOLLOW_US_KO"
+const LEAD_FOLLOW_US_ZH() = "FOLLOW_US_ZH"
+const LEAD_CHECK_IN_PT() = "CHECK_IN_PT"
+const LEAD_CHECK_IN_RU() = "CHECK_IN_RU"
+const LEAD_CHECK_IN_JP() = "CHECK_IN_JP"
+const LEAD_CHECK_IN_KO() = "CHECK_IN_KO"
+const LEAD_CHECK_IN_ZH() = "CHECK_IN_ZH"
+const LEAD_CHECK_IN_EN() = "CHECK_IN_EN"
+const LEAD_HASHTAG() = "#"
+const LEAD_TWITTER() = "TWITTER"
+const LEAD_ZOMATO() = "ZOMATO"
+const LEAD_YOUTUBE() = "YOUTUBE"
+const LEAD_INSTAGRAM() = "INSTAGRAM"
+const LEAD_GOOGLE_STATS() = "GOOGLE_STATS"
+const LEAD_VKONTAKTE() = "VKONTAKTE"
+const LEAD_FOURSQUARE() = "FOURSQUARE"
+const LEAD_SWARM() = "SWARM"
+const LEAD_YELP() = "YELP"
+const LEAD_TRIPADVISOR() = "TRIPADVISOR"
+const LEAD_WEIBO() = "WEIBO"
+const LEAD_DIANPING() = "DIANPING"
+const LEAD_FACEBOOK() = "FACEBOOK"
+const LEAD_SMILEY() = ":)"
+const LEAD_THUMBSUP() = "(Y)"
+const LEAD_THANKS_ES() = "THANKS_ES"
+const LEAD_THANKS_PT() = "THANKS_PT"
+const LEAD_THANKS_RU() = "THANKS_RU"
+const LEAD_THANKS_FR() = "THANKS_FR"
+const LEAD_THANKS_EN() = "THANKS_EN"
+const LEAD_THANKS_IT() = "THANKS_IT"
+const LEAD_THANKS_DE() = "THANKS_DE"
+const LEAD_THANKS_JA() = "THANKS_JA"
+const LEAD_THANKS_KO() = "THANKS_KO"
+const LEAD_THANKS_ZH() = "THANKS_ZH"
+
+# Alt lead flap
+const LEAD_SMILEY_ALT() = "SMILEY"
+const LEAD_SMILEY_ALT2() = ":-)"
+const LEAD_THUMBSUP_ALT() = "THUMBSUP"
+
+# Flaps
+const FLAP_BLANK() = "_"
+const FLAP_EMPTY_BUBBLE() = "EMPTY_BUBBLE"
+const FLAP_1() = "1"
+const FLAP_A() = "A"
+const FLAP_B() = "B"
+const FLAP_C() = "C"
+const FLAP_D() = "D"
+const FLAP_SLASH() = "/"
+const FLAP_E() = "E"
+const FLAP_F() = "F"
+const FLAP_G() = "G"
+const FLAP_H() = "H"
+const FLAP_I() = "I"
+const FLAP_2() = "2"
+const FLAP_J() = "J"
+const FLAP_K() = "K"
+const FLAP_L() = "L"
+const FLAP_M() = "M"
+const FLAP_N() = "N"
+const FLAP_5() = "5"
+const FLAP_O() = "O"
+const FLAP_P() = "P"
+const FLAP_Q() = "Q"
+const FLAP_R() = "R"
+const FLAP_S() = "S"
+const FLAP_3() = "3"
+const FLAP_T() = "T"
+const FLAP_U() = "U"
+const FLAP_V() = "V"
+const FLAP_W() = "W"
+const FLAP_X() = "X"
+const FLAP_6() = "6"
+const FLAP_Z() = "Z"
+const FLAP_Y() = "Y"
+const FLAP_HEART() = "<3"
+const FLAP_EURO() = "€"
+const FLAP_DOLLAR() = "$"
+const FLAP_4() = "4"
+const FLAP_POUND() = "£"
+const FLAP_YEN() = "¥"
+const FLAP_PLUS() = "+"
+const FLAP_QUESTION_MARK() = "?"
+const FLAP_EXCLAMATION_MARK() = "!"
+const FLAP_FULL_BUBBLE() = "FULL_BUBBLE"
+const FLAP_AMPERSAND() = "%26"
+const FLAP_AT() = "@"
+const FLAP_HASHTAG() = "#"
+const FLAP_ARROW() = "->"
+const FLAP_COLON() = ":"
+const FLAP_0() = "0"
+const FLAP_PERIOD() = "."
+const FLAP_9() = "9"
+const FLAP_HALF_BUBBLE() = "HALF_BUBBLE"
+const FLAP_FULL_STAR() = "*"
+const FLAP_HALF_STAR() = "HALF_STAR"
+const FLAP_EMPTY_STAR() = "EMPTY_STAR"
+const FLAP_BLANK2() = "BLANK2"
+const FLAP_8() = "8"
+const FLAP_PERCENT() = "%"
+const FLAP_7() = "7"
+
+# Alt flaps
+const FLAP_BLANK_ALT() = "BLANK"
+const FLAP_PERCENT_ALT() = "PERCENT"
+const FLAP_FULL_STAR_ALT() = "FULL_STAR"
+const FLAP_HEART_ALT() = "HEART"
+
+dim message_index
+dim buffer_index
+dim buffer(7)
+dim found
+
+procedure lead_char_to_flap_index(lead_message_len, lead_message())
+    if memcmp(lead_message(0), LEAD_BLANK(0), 5) then
+        buffer(0:1) = "-"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 5
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_BLAST(0), 5) then
+        buffer(0:1) = "B"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 5
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_LIKE_RU(0), 7) then
+        buffer(0:1) = "L"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 7
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_LIKE_FR(0), 7) then
+        buffer(0:1) = "L"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 7
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_LIKE_US_EN(0), 10) then
+        buffer(0:1) = "L"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 10
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_LIKE_EN(0), 7) then
+        buffer(0:1) = "L"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 7
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_LIKE_JA(0), 7) then
+        buffer(0:1) = "L"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 7
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_LIKE_KO(0), 7) then
+        buffer(0:1) = "L"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 7
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_LIKE_ZH(0), 7) then
+        buffer(0:1) = "L"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 7
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_FOLLOW_US_ES(0), 12) then
+        buffer(0:1) = "F"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 12
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_FOLLOW_US_PT(0), 12) then
+        buffer(0:1) = "F"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 12
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_FOLLOW_US_RU(0), 12) then
+        buffer(0:1) = "F"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 12
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_FOLLOW_US_FR(0), 12) then
+        buffer(0:1) = "F"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 12
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_FOLLOW_US_EN(0), 12) then
+        buffer(0:1) = "F"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 12
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_FOLLOW_US_IT(0), 12) then
+        buffer(0:1) = "F"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 12
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_FOLLOW_US_DE(0), 12) then
+        buffer(0:1) = "F"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 12
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_FOLLOW_US_JP(0), 12) then
+        buffer(0:1) = "F"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 12
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_FOLLOW_US_KO(0), 12) then
+        buffer(0:1) = "F"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 12
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_FOLLOW_US_ZH(0), 12) then
+        buffer(0:1) = "F"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 12
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_CHECK_IN_PT(0), 11) then
+        buffer(0:1) = "C"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 11
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_CHECK_IN_RU(0), 11) then
+        buffer(0:1) = "C"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 11
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_CHECK_IN_JP(0), 11) then
+        buffer(0:1) = "C"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 11
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_CHECK_IN_KO(0), 11) then
+        buffer(0:1) = "C"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 11
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_CHECK_IN_ZH(0), 11) then
+        buffer(0:1) = "C"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 11
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_CHECK_IN_EN(0), 11) then
+        buffer(0:1) = "C"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 11
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_TWITTER(0), 7) then
+        buffer(0:1) = "T"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 7
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_ZOMATO(0), 6) then
+        buffer(0:1) = "Z"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 6
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_YOUTUBE(0), 7) then
+        buffer(0:1) = "Y"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 7
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_INSTAGRAM(0), 9) then
+        buffer(0:1) = "C"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 9
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_GOOGLE_STATS(0), 12) then
+        buffer(0:1) = "G"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 12
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_VKONTAKTE(0), 9) then
+        buffer(0:1) = "V"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 9
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_FOURSQUARE(0), 10) then
+        buffer(0:1) = "F"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 10
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_SWARM(0), 5) then
+        buffer(0:1) = "S"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 5
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_YELP(0), 4) then
+        buffer(0:1) = "Y"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 4
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_TRIPADVISOR(0), 11) then
+        buffer(0:1) = "T"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 11
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_WEIBO(0), 5) then
+        buffer(0:1) = "W"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 5
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_DIANPING(0), 8) then
+        buffer(0:1) = "D"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 8
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_FACEBOOK(0), 8) then
+        buffer(0:1) = "F"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 8
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_SMILEY(0), 2) then
+        buffer(0:1) = ")"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 2
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_THUMBSUP(0), 3) then
+        buffer(0:1) = "i"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 3
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_THANKS_ES(0), 9) then
+        buffer(0:1) = "T"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 9
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_THANKS_PT(0), 9) then
+        buffer(0:1) = "T"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 9
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_THANKS_RU(0), 9) then
+        buffer(0:1) = "T"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 9
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_THANKS_FR(0), 9) then
+        buffer(0:1) = "T"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 9
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_THANKS_EN(0), 9) then
+        buffer(0:1) = "T"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 9
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_THANKS_IT(0), 9) then
+        buffer(0:1) = "T"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 9
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_THANKS_DE(0), 9) then
+        buffer(0:1) = "T"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 9
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_THANKS_JA(0), 9) then
+        buffer(0:1) = "T"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 9
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_THANKS_KO(0), 9) then
+        buffer(0:1) = "T"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 9
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_THANKS_ZH(0), 9) then
+        buffer(0:1) = "T"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 9
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_SMILEY_ALT(0), 6) then
+        buffer(0:1) = ")"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 6
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_SMILEY_ALT2(0), 3) then
+        buffer(0:1) = ")"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 3
+        return
+    end if
+    if memcmp(lead_message(0), LEAD_THUMBSUP_ALT(0), 8) then
+        buffer(0:1) = "i"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 8
+        return
+    end if
+    if memcmp(lead_message(0), FLAP_1(0), 1) then
+        buffer(0:1) = "1"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 1
+        return
+    end if
+    if memcmp(lead_message(0), FLAP_2(0), 1) then
+        buffer(0:1) = "2"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 1
+        return
+    end if
+    if memcmp(lead_message(0), FLAP_3(0), 1) then
+        buffer(0:1) = "3"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 1
+        return
+    end if
+    if memcmp(lead_message(0), FLAP_4(0), 1) then
+        buffer(0:1) = "4"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 1
+        return
+    end if
+    if memcmp(lead_message(0), FLAP_5(0), 1) then
+        buffer(0:1) = "5"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 1
+        return
+    end if
+    if memcmp(lead_message(0), FLAP_6(0), 1) then
+        buffer(0:1) = "6"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 1
+        return
+    end if
+    if memcmp(lead_message(0), FLAP_7(0), 1) then
+        buffer(0:1) = "7"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 1
+        return
+    end if
+    if memcmp(lead_message(0), FLAP_8(0), 1) then
+        buffer(0:1) = "8"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 1
+        return
+    end if
+    if memcmp(lead_message(0), FLAP_9(0), 1) then
+        buffer(0:1) = "9"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 1
+        return
+    end if
+    if memcmp(lead_message(0), FLAP_HASHTAG(0), 1) then
+        buffer(0:1) = "#"
+        buffer_index = buffer_index + 1
+        message_index = message_index + 1
+        return
+    end if
+end
+
+procedure char_to_flap_index(message_len, message())
+    if memcmp(message(0), FLAP_EMPTY_BUBBLE(0), 12) then
+        buffer(buffer_index:1) = "O"
+        message_index = message_index + 12
+        return
+    end if
+    if memcmp(message(0), FLAP_FULL_BUBBLE(0), 11) then
+        buffer(buffer_index:1) = "0"
+        message_index = message_index + 11
+        return
+    end if
+    if memcmp(message(0), FLAP_HALF_BUBBLE(0), 11) then
+        buffer(buffer_index:1) = "U"
+        message_index = message_index + 10
+        return
+    end if
+    if memcmp(message(0), FLAP_EMPTY_STAR(0), 10) then
+        buffer(buffer_index:1) = ")"
+        message_index = message_index + 10
+        return
+    end if
+    if memcmp(message(0), FLAP_HALF_STAR(0), 9) then
+        buffer(buffer_index:1) = "("
+        message_index = message_index + 9
+        return
+    end if
+    if memcmp(message(0), FLAP_FULL_STAR_ALT(0), 9) then
+        buffer(buffer_index:1) = "*"
+        message_index = message_index + 9
+        return
+    end if
+    if memcmp(message(0), FLAP_PERCENT_ALT(0), 7) then
+        buffer(buffer_index:1) = "%"
+        message_index = message_index + 7
+        return
+    end if
+    if memcmp(message(0), FLAP_BLANK2(0), 6) then
+        buffer(buffer_index:1) = "-"
+        message_index = message_index + 6
+        return
+    end if
+    if memcmp(message(0), FLAP_BLANK_ALT(0), 5) then
+        buffer(buffer_index:1) = "-"
+        message_index = message_index + 5
+        return
+    end if
+    if memcmp(message(0), FLAP_HEART_ALT(0), 5) then
+        buffer(buffer_index:1) = "<"
+        message_index = message_index + 5
+        return
+    end if
+    if memcmp(message(0), FLAP_HEART(0), 2) then
+        buffer(buffer_index:1) = "<"
+        message_index = message_index + 2
+        return
+    end if
+    if memcmp(message(0), FLAP_ARROW(0), 2) then
+        buffer(buffer_index:1) = ">"
+        message_index = message_index + 2
+        return
+    end if
+    if memcmp(message(0), FLAP_BLANK(0), 1) then
+        buffer(buffer_index:1) = "-"
+    end if
+    if memcmp(message(0), FLAP_SLASH(0), 1) then
+        buffer(buffer_index:1) = "/"
+    end if
+    if memcmp(message(0), FLAP_EURO(0), 1) then
+        buffer(buffer_index:1) = "€"
+    end if
+    if memcmp(message(0), FLAP_DOLLAR(0), 1) then
+        buffer(buffer_index:1) = "$"
+    end if
+    if memcmp(message(0), FLAP_POUND(0), 1) then
+        buffer(buffer_index:1) = "£"
+    end if
+    if memcmp(message(0), FLAP_YEN(0), 1) then
+        buffer(buffer_index:1) = "¥"
+    end if
+    if memcmp(message(0), FLAP_PLUS(0), 1) then
+        buffer(buffer_index:1) = "+"
+    end if
+    if memcmp(message(0), FLAP_QUESTION_MARK(0), 1) then
+        buffer(buffer_index:1) = "?"
+    end if
+    if memcmp(message(0), FLAP_EXCLAMATION_MARK(0), 1) then
+        buffer(buffer_index:1) = "!"
+    end if
+    if memcmp(message(0), FLAP_AMPERSAND(0), 3) then
+        buffer(buffer_index:1) = "&"
+    end if
+    if memcmp(message(0), FLAP_AT(0), 1) then
+        buffer(buffer_index:1) = "@"
+    end if
+    if memcmp(message(0), FLAP_HASHTAG(0), 1) then
+        buffer(buffer_index:1) = "#"
+    end if
+    if memcmp(message(0), FLAP_COLON(0), 1) then
+        buffer(buffer_index:1) = ":"
+    end if
+    if memcmp(message(0), FLAP_PERIOD(0), 1) then
+        buffer(buffer_index:1) = "."
+    end if
+    if memcmp(message(0), FLAP_FULL_STAR(0), 1) then
+        buffer(buffer_index:1) = "*"
+    end if
+    if memcmp(message(0), FLAP_PERCENT(0), 1) then
+        buffer(buffer_index:1) = "%"
+    end if
+    if memcmp(message(0), FLAP_A(0), 1) then
+        buffer(buffer_index:1) = "A"
+    end if
+    if memcmp(message(0), FLAP_B(0), 1) then
+        buffer(buffer_index:1) = "B"
+    end if
+    if memcmp(message(0), FLAP_C(0), 1) then
+        buffer(buffer_index:1) = "C"
+    end if
+    if memcmp(message(0), FLAP_D(0), 1) then
+        buffer(buffer_index:1) = "D"
+    end if
+    if memcmp(message(0), FLAP_E(0), 1) then
+        buffer(buffer_index:1) = "E"
+    end if
+    if memcmp(message(0), FLAP_F(0), 1) then
+        buffer(buffer_index:1) = "F"
+    end if
+    if memcmp(message(0), FLAP_G(0), 1) then
+        buffer(buffer_index:1) = "G"
+    end if
+    if memcmp(message(0), FLAP_H(0), 1) then
+        buffer(buffer_index:1) = "H"
+    end if
+    if memcmp(message(0), FLAP_I(0), 1) then
+        buffer(buffer_index:1) = "I"
+    end if
+    if memcmp(message(0), FLAP_J(0), 1) then
+        buffer(buffer_index:1) = "J"
+    end if
+    if memcmp(message(0), FLAP_K(0), 1) then
+        buffer(buffer_index:1) = "K"
+    end if
+    if memcmp(message(0), FLAP_L(0), 1) then
+        buffer(buffer_index:1) = "L"
+    end if
+    if memcmp(message(0), FLAP_M(0), 1) then
+        buffer(buffer_index:1) = "M"
+    end if
+    if memcmp(message(0), FLAP_N(0), 1) then
+        buffer(buffer_index:1) = "N"
+    end if
+    if memcmp(message(0), FLAP_O(0), 1) then
+        buffer(buffer_index:1) = "O"
+    end if
+    if memcmp(message(0), FLAP_P(0), 1) then
+        buffer(buffer_index:1) = "P"
+    end if
+    if memcmp(message(0), FLAP_Q(0), 1) then
+        buffer(buffer_index:1) = "Q"
+    end if
+    if memcmp(message(0), FLAP_R(0), 1) then
+        buffer(buffer_index:1) = "R"
+    end if
+    if memcmp(message(0), FLAP_S(0), 1) then
+        buffer(buffer_index:1) = "S"
+    end if
+    if memcmp(message(0), FLAP_T(0), 1) then
+        buffer(buffer_index:1) = "T"
+    end if
+    if memcmp(message(0), FLAP_U(0), 1) then
+        buffer(buffer_index:1) = "U"
+    end if
+    if memcmp(message(0), FLAP_V(0), 1) then
+        buffer(buffer_index:1) = "V"
+    end if
+    if memcmp(message(0), FLAP_W(0), 1) then
+        buffer(buffer_index:1) = "W"
+    end if
+    if memcmp(message(0), FLAP_X(0), 1) then
+        buffer(buffer_index:1) = "X"
+    end if
+    if memcmp(message(0), FLAP_Y(0), 1) then
+        buffer(buffer_index:1) = "Y"
+    end if
+    if memcmp(message(0), FLAP_Z(0), 1) then
+        buffer(buffer_index:1) = "Z"
+    end if
+    if memcmp(message(0), FLAP_0(0), 1) then
+        buffer(buffer_index:1) = "0"
+    end if
+    if memcmp(message(0), FLAP_1(0), 1) then
+        buffer(buffer_index:1) = "1"
+    end if
+    if memcmp(message(0), FLAP_2(0), 1) then
+        buffer(buffer_index:1) = "2"
+    end if
+    if memcmp(message(0), FLAP_3(0), 1) then
+        buffer(buffer_index:1) = "3"
+    end if
+    if memcmp(message(0), FLAP_4(0), 1) then
+        buffer(buffer_index:1) = "4"
+    end if
+    if memcmp(message(0), FLAP_5(0), 1) then
+        buffer(buffer_index:1) = "5"
+    end if
+    if memcmp(message(0), FLAP_6(0), 1) then
+        buffer(buffer_index:1) = "6"
+    end if
+    if memcmp(message(0), FLAP_7(0), 1) then
+        buffer(buffer_index:1) = "7"
+    end if
+    if memcmp(message(0), FLAP_8(0), 1) then
+        buffer(buffer_index:1) = "8"
+    end if
+    if memcmp(message(0), FLAP_9(0), 1) then
+        buffer(buffer_index:1) = "9"
+    end if
+
+    message_index = message_index + 1
+end
+
+export procedure get_index_for_flap(message_len, message())
+    message_index = 0
+    buffer_index = 0
+    #buffer(0:4) = $0000
+    #buffer(4:3) = $000
+    buffer(0:7) = "_______"
+
+    call lead_char_to_flap_index(message_len, message(0:message_len))
+    
+    if buffer_index = 1 && message(message_index:1) = " " then
+        message_index = message_index + 1
+    else
+        message_index = 0
+        buffer_index = 1
+        buffer(0:1) = "_"
+    end if
+    
+    while message_index < message_len && buffer_index < 7       
+        call char_to_flap_index(message_len - message_index, message(message_index:message_len - message_index))
+        buffer_index = buffer_index + 1
+    end while
+
+    call endpoint_send(0, 8, "buffer: ")
+    call endpoint_send(0, 7, buffer(0:7))
+    call endpoint_send(0, 2, "\r\n")
+end

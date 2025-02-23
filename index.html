@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>FlapOS</title>
+        <link rel="stylesheet" href="style.css" media="screen"/>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+    </head>
+    <body>
+        <h1><span>F</span><span>L</span><span>A</span><span>P</span><span>_</span><span>O</span><span>S</span></h1>
+        <div class="container" id="step-mode-select">
+            <p>Select the mode:</p>
+            <ul id="mode-list">
+                <li data-mode="ap">AP (standalone)</li>
+                <li data-mode="sta">Server mode</li>
+                <li data-mode="cli">Client mode (original mode)</li>
+            </ul>
+        </div>
+        <div class="container" id="step-wifi-select" style="display: none;">
+            <p>Select the network you want to connect your device to:</p>
+            <ul id="ssid-list">
+            </ul>
+        </div>
+        <div class="container" id="step-endpoint-select" style="display: none;">
+            <p>Select the domain or IP address of your FlapOS/Flapit server:</p>
+            <input type="text" placeholder="e.g. myflaposserver.local, 192.168.1.10">
+            <button style="margin-top: 10px; width: 100%;" id="validate-endpoint">Validate</button>
+        </div>
+        <div class="container" id="step-finished" style="display: none;">
+            <p>Your device will now reboot in the configured mode!</p>
+        </div>
+        <div class="modal-container" style="display: none;">
+            <div class="modal">
+                <h2>Password for <span id="wifi-name"></span>:</h2>
+                <input type="password" placeholder="Password">
+                <button id="cancel" style="margin-top: 20px;">Cancel</button>
+                <button id="validate-wifi" style="margin-top: 20px;">Validate</button>
+            </div>
+        </div>
+
+        <script type="module">
+            const ssidList = document.querySelector('#ssid-list');
+            
+            const response = await fetch('/api/ssids');
+            const ssids = await response.json()
+            ssids.forEach(name => ssidList.innerHTML += `<li>${name}</li>`);
+
+            const stepModeSelectContainer = document.querySelector('#step-mode-select');
+            const stepWifiSelectContainer = document.querySelector("#step-wifi-select");
+            const stepEnpointSelectContainer = document.querySelector('#step-endpoint-select');
+            const stepFinished = document.querySelector('#step-finished');
+            const stepModeItems = stepModeSelectContainer.querySelectorAll('li');
+            const modeStepMap = {ap: stepFinished, sta: stepWifiSelectContainer, cli: stepEnpointSelectContainer};
+            const modeIdMap = {ap: 1, sta: 2, cli: 3};
+            const modeCallback = {ap: () => sendConf(), sta: () => {}, cli: () => {}}
+
+            const endpointInput = stepEnpointSelectContainer.querySelector('input');
+            const validateEndpointButton = stepEnpointSelectContainer.querySelector('#validate-endpoint');
+
+            const ssidItems = ssidList.querySelectorAll('li')
+            const wifiName = document.querySelector('#wifi-name');
+            const passwordInput = document.querySelector('input[type="password"]');
+            const cancelButton = document.querySelector('button#cancel');
+            const validateButton = document.querySelector('button#validate-wifi');
+            const modalContainer = document.querySelector('.modal-container');
+            var selectedMode = 1;
+            var selectedSSID = '';
+
+            stepModeItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const mode = item.dataset.mode;
+                    stepModeSelectContainer.style.display = 'none';
+                    modeStepMap[mode].style.display = '';
+                    selectedMode = modeIdMap[mode];
+                    modeCallback[mode]();
+                });
+            });
+
+            ssidItems.forEach(item => item.addEventListener('click', evt => {
+                selectedSSID = [...ssidItems].indexOf(evt.target);
+                wifiName.innerText = evt.target.innerText;
+                modalContainer.style.display = '';
+            }));
+
+            validateEndpointButton.addEventListener('click', () => {
+                stepEnpointSelectContainer.style.display = 'none';
+                stepWifiSelectContainer.style.display = '';
+            });
+
+            const closeModal = (evt) => {
+                if (undefined === evt || evt.target === modalContainer || evt.target === cancelButton) {
+                    modalContainer.style.display = 'none';
+                }
+            };
+
+            const sendConf = () => {
+                fetch('/api/conf', {
+                    method: 'POST',
+                    body: `${selectedMode}|${selectedSSID}|${passwordInput.value}|${endpointInput.value}`
+                });
+                closeModal();
+                stepWifiSelectContainer.style.display = 'none';
+                stepFinished.style.display = '';
+            };
+
+            validateButton.addEventListener('click', sendConf);
+            modalContainer.addEventListener('click', closeModal);
+            cancelButton.addEventListener('click', closeModal);
+        </script>
+    </body>
+</html>

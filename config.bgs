@@ -1,0 +1,161 @@
+const FLASH_PS_KEY_AP_SCANLIST_ITEMS = $8039
+
+const RESOURCE_SSIDS() = "/api/ssids"
+const RESOURCE_SSIDS_LEN = 10
+const RESOURCE_CONF() = "/api/conf"
+const RESOURCE_CONF_LEN = 9
+
+dim scan_result_index
+dim selected_mode
+dim selected_endpoint(255)
+dim selected_endpoint_len
+dim selected_ssid_index
+dim selected_ssid(255)
+dim selected_ssid_password_len
+dim selected_ssid_password(255)
+
+dim handled
+
+export procedure start_conf_mode()
+    call tcpip_configure(192.168.1.1, 255.255.255.0, 192.168.1.1, 0)
+    call system_set_max_power_saving_state(0)
+    call sme_start_ap_mode(1, 0, 6, "FlapOS")
+end
+
+event sme_scanned(status)
+    scan_result_index = 0
+    call sme_scan_results_sort_rssi(10)
+end
+
+procedure method_not_allowed(allowed_method)
+    response(0:33) = "HTTP/1.1 405 Method Not Allowed\r\n"
+    if allowed_method = HTTP_POST then
+        response(33:15) = "Allow: POST\r\n\r\n"
+        response_len = 48
+    else
+        response(33:14) = "Allow: GET\r\n\r\n"
+        response_len = 47
+    end if
+end
+
+# event sme_ap_mode_started
+export procedure config_sme_ap_mode_started(hw_interface)
+    call https_add_path(0, 1, "/")
+    call https_add_path(1, 5, "/api/")
+    call https_enable(1, 1, 0)
+    call endpoint_send(0, 22, "[DBG]AP mode started\r\n")
+end
+
+procedure handle_ssids_request(request)
+    response(0:52) =  "HTTP/1.1 200 OK\r\nContent-type: application/json\r\n\r\n["
+    response_len = 52
+
+    scan_result_index = 0
+    while scan_result_index < 10
+        call flash_ps_load(FLASH_PS_KEY_AP_SCANLIST_ITEMS + scan_result_index)(result, flash_result_len, flash_result_data(0:flash_result_len))
+
+        if scan_result_index > 0 then
+            response(response_len:1) = ","
+            response_len = response_len + 1
+        end if
+        
+        response(response_len:1) =  "\x22"
+        response_len = response_len + 1
+        if result = 0 then
+            response(response_len:flash_result_len) =  flash_result_data(0:flash_result_len)
+            response_len = response_len + flash_result_len
+        end if
+        response(response_len:1) =  "\x22"
+        response_len = response_len + 1
+        
+        scan_result_index = scan_result_index + 1
+    end while
+
+    response(response_len:1) =  "]"
+    response_len = response_len + 1
+end
+
+procedure handle_conf_request(request)
+    response(0:19) =  "HTTP/1.1 200 OK\r\n\r\n"
+    response_len = 19
+    
+    call util_atoi(1, request_data(0:1))(selected_mode)
+    call flash_ps_save(FLASH_PS_KEY_APPL_NUM1, 1, selected_mode)(result)
+    
+    if selected_mode = APP_MODE_AP then
+        call endpoint_send(0, 29, "[DBG]Mode AP(conf) selected\r\n")
+        return
+    end if
+
+    if selected_mode = APP_MODE_STA || selected_mode = APP_MODE_CLI then
+        if selected_mode = APP_MODE_STA then
+            call endpoint_send(0, 24, "[DBG]Mode STA selected\r\n")
+        else
+            call endpoint_send(0, 24, "[DBG]Mode CLI selected\r\n")
+        end if
+        
+        call util_atoi(1, request_data(2:1))(selected_ssid_index)
+        call flash_ps_load(FLASH_PS_KEY_AP_SCANLIST_ITEMS + selected_ssid_index)(result, flash_result_len, selected_ssid(0:flash_result_len))
+        call flash_ps_save(FLASH_PS_KEY_CLIENT_SSID, flash_result_len, selected_ssid(0:flash_result_len))(result)
+
+        call endpoint_send(0, flash_result_len, selected_ssid(0:flash_result_len))
+        call endpoint_send(0, 2, "\r\n")
+
+        if request_data(3:1) = request_data(4:1) && request_data(3:1) = "|" then
+            call flash_ps_erase(FLASH_PS_KEY_CLIENT_PW)
+        else
+            selected_ssid_password_len = 0
+            while selected_ssid_password_len < request_data_len - 4 && request_data(4 + selected_ssid_password_len:1) != "|"
+                selected_ssid_password(selected_ssid_password_len:1) = request_data(4 + selected_ssid_password_len:1)
+                selected_ssid_password_len = selected_ssid_password_len + 1
+            end while
+            call endpoint_send(0, selected_ssid_password_len, selected_ssid_password(0:selected_ssid_password_len))
+            call endpoint_send(0, 2, "\r\n")
+            call flash_ps_save(FLASH_PS_KEY_CLIENT_PW, selected_ssid_password_len, selected_ssid_password(0:selected_ssid_password_len))(result)
+        end if
+        if selected_mode = APP_MODE_CLI then
+            # @ToDo: save endpoint
+        end if
+    end if
+end
+
+# event https_api_request_finished
+export procedure config_https_api_request_finished(request)
+    call endpoint_send(0, 23, "[DBG]request finished\r\n")
+    
+    handled = 0
+    if request_resource_len = RESOURCE_SSIDS_LEN && memcmp(request_resource(0), RESOURCE_SSIDS(0), RESOURCE_SSIDS_LEN) then
+        if request_method = HTTP_GET then
+            call handle_ssids_request(request)
+        else
+            call method_not_allowed(HTTP_POST)
+        end if
+        handled = 1
+    end if
+    
+    if request_resource_len = RESOURCE_CONF_LEN && memcmp(request_resource(0), RESOURCE_CONF(0), RESOURCE_CONF_LEN) then
+        if request_method = HTTP_POST then
+            call handle_conf_request(request)
+        else
+            call method_not_allowed(HTTP_GET)
+        end if
+        handled = 1
+    end if
+
+    if handled = 0 then
+        response(0:26) = "HTTP/1.1 404 Not Found\r\n\r\n"
+        response_len = 26
+    end if
+    
+    call https_api_response(request, response_len, response(0:response_len))
+    call https_api_response_finish()
+end
+
+event sme_scan_sort_result(bssid, channel, rssi, snr, secure, ssid_len, ssid_data)
+    call flash_ps_save(FLASH_PS_KEY_AP_SCANLIST_ITEMS + scan_result_index, ssid_len, ssid_data(0:ssid_len))
+    scan_result_index = scan_result_index + 1
+end
+
+event sme_scan_sort_finished()
+    call start_conf_mode()
+end

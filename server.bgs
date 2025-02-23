@@ -1,0 +1,71 @@
+const MESSAGE_DATA() = "message="
+
+dim message(85)
+dim message_len
+
+import "flaps.bgs"
+
+procedure start_server()
+    
+end
+
+# event sme_connected
+export procedure sta_sme_connected(status, hw_interface, bssid)
+    call endpoint_send(0 , 24, "[DBG]sta sme connected\r\n")
+    call https_add_path(1, 1, "/")
+    call https_enable(1, 0, 0)
+end
+
+export procedure start_ap_mode()
+    call endpoint_send(0, 20, "[DBG]start ap mode\r\n")
+    call tcpip_configure(192.168.1.1, 255.255.255.0, 192.168.1.1, 0)
+    call system_set_max_power_saving_state(0)
+    call sme_start_ap_mode(1, 0, 9, "FlapOS_AP")
+end
+
+# event sme_ap_mode_started
+export procedure server_sme_ap_mode_started(hw_interface)
+    call endpoint_send(0, 22, "[DBG]ap mode started\r\n")
+    call https_add_path(1, 1, "/")
+    call https_enable(1, 1, 0)
+end
+
+procedure handle_request()
+    if memcmp(request_data(0), MESSAGE_DATA(0), 8) then
+        call endpoint_send(0, 20, "[DBG]message found\r\n")
+        
+        message_len = 0
+        while message_len < 85 && (8 + message_len) < request_data_len && request_data(8 + message_len:1) != "&" && request_data(8 + message_len:1) != "\r"
+            message(message_len:1) = request_data(8 + message_len:1)
+            message_len = message_len + 1
+        end while
+
+        call endpoint_send(0, message_len, message(0:message_len))
+        call endpoint_send(0, 2,"\r\n")
+        call get_index_for_flap(message_len, message(0:message_len))
+    else
+        call endpoint_send(0, 24, "[DBG]message not found\r\n")
+    end if
+end
+
+# event https_api_request_finished
+export procedure server_https_api_request_finished(request)
+    if request_method = HTTP_POST then
+        call handle_request()
+        response(0:19) = "HTTP/1.1 200 OK\r\n\r\n"
+        response_len = 19
+    else
+        response(0:33) = "HTTP/1.1 405 Method Not Allowed\r\n"
+        response(33:15) = "Allow: POST\r\n\r\n"
+        response_len = 48
+    end if
+
+    call https_api_response(request, response_len, response(0:response_len))
+    call https_api_response_finish()
+
+    # call hardware_io_port_config_direction(4, $0070, $0070) # right switches as input
+    # targets(0:1) = targets(0:1) + 1
+    # call run()
+    # call hardware_set_soft_timer(, 0, 1)
+
+end

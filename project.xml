@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project>
+    <scripting>
+        <script in="main.bgs" />
+    </scripting>
+    <hardware>
+        <uart channel="0" baud="115200" api="false" />
+        <uart channel="1" baud="115200" api="true" handshake="True" />
+        <sleep interrupts="0x1"/>
+    </hardware>
+    <files>
+        <file path="index.html"/>
+        <file path="404.html"/>
+        <file path="style.css"/>
+    </files>
+    <image out="flap_os.dfu" out_hex="flap_os.hex" /> 
+</project>
