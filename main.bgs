@@ -190,6 +190,7 @@ event hardware_soft_timer(handle)
 end
 
 import "server.bgs"
+import "cli.bgs"
 
 procedure connect_to_ssid() 
     call endpoint_send(0, 27, "[DBG]conneting to ssid...\r\n")
@@ -234,6 +235,9 @@ event sme_connected(status, hw_interface, bssid)
     if mode = APP_MODE_STA then
         call sta_sme_connected(status, hw_interface, bssid(0:6))
     end if
+    if mode = APP_MODE_CLI then
+        call cli_sme_connected(status, hw_interface, bssid(0:6))
+    end if
 end
 
 event sme_connect_failed(reason, hw_interface)
@@ -243,6 +247,9 @@ end
 
 event sme_disconnected(reason, hw_interface)
     call endpoint_send(0 , 23, "[DBG]sme_disconnected\r\n")
+    if mode = APP_MODE_CLI
+        call cli_sme_disconnected(reason, hw_interface)
+    end if
 end
 
 event https_api_request(request, method, resource_len, resource_data)

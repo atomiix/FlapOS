@@ -1,0 +1,107 @@
+const echo_type = $04000000
+const ok_type = $01000000
+const set_counter_value_type = $02000000
+
+dim ip_address(4)
+dim ip_address_len
+dim endpoint_ip(4)
+dim connected
+dim auth_sent
+dim debug(32)
+
+# event sme_connected
+export procedure cli_sme_connected(status, hw_interface, bssid)
+    call endpoint_send(0 , 24, "[DBG]cli sme connected\r\n")
+    connected = 1
+end
+
+export procedure cli_sme_disconnected(reason, hw_interface)
+    call util_itoa(reason)(flash_result_len, flash_result_data(0:flash_result_len))
+    call endpoint_send(0 , 11, "[DBG]reason ")
+    call endpoint_send(0, flash_result_len, flash_result_data(0:flash_result_len))
+    call endpoint_send(0, 2, "\r\n")
+    connected = 0
+end
+
+event tcpip_dns_gethostbyname_result(dns_result, address, name_len, name_data)
+    call endpoint_send(0 , 27, "[DBG]endpoint resolves to: ")
+
+    call util_itoa(address & $FF)(ip_address_len, debug(0:ip_address_len))
+    call endpoint_send(0, ip_address_len, debug(0:ip_address_len))
+    call endpoint_send(0, 1, ".")
+
+    call util_itoa((address & $FF00) >> 8)(ip_address_len, debug(0:ip_address_len))
+    call endpoint_send(0, ip_address_len, debug(0:ip_address_len))
+    call endpoint_send(0, 1, ".")
+
+    call util_itoa((address & $FF0000) >> 16)(ip_address_len, debug(0:ip_address_len))
+    call endpoint_send(0, ip_address_len, debug(0:ip_address_len))
+    call endpoint_send(0, 1, ".")
+
+    call util_itoa((address & $FF000000) >> 24)(ip_address_len, debug(0:ip_address_len))
+    call endpoint_send(0, ip_address_len, debug(0:ip_address_len))
+
+    call endpoint_send(0, 2, "\r\n")
+
+    call tcpip_tcp_connect(address, 443, -1)
+end
+
+event endpoint_data(endpoint, data_len, data_data)
+    call endpoint_send(0, 20, "[DBG]endpoint data\r\n")
+    call endpoint_send(0, data_len, data_data(0:data_len))
+
+    if data_len = 8 then
+        if data_data(4:4) = echo_type then
+            call endpoint_send(0, 20, "[DBG]echo received\r\n")
+            call endpoint_send(endpoint, data_len, data_data(0:data_len))
+        end if
+        if data_data(4:4) = ok_type then
+            call endpoint_send(0, 18, "[DBG]ok received\r\n")
+        end if
+    end if
+    if data_len = 15 && data_data(4:4) = set_counter_value_type then
+        call endpoint_send(0, 33, "[DBG]set_counter_value received\r\n")
+    end if
+end
+
+event tcpip_endpoint_status(endpoint, local_ip, local_port, remote_ip, remote_port)
+    # ToDo: use serial number as first arg
+    call endpoint_send(0, 28, "[DBG]tcpip_endpoint_status\r\n")
+    debug(0:4) = $13000000
+    debug(4:4) = $05000000
+    debug(8:4) = $01000000
+    debug(12:1) = "a"
+    debug(13:4) = $01000000
+    debug(17:1) = "b"
+    debug(18:4) = $01000000
+    debug(22:1) = "c"
+    call endpoint_send(endpoint, 23, debug(0:23))
+end
+
+event tcpip_configuration(address, netmask, gateway, use_dhcp)
+    auth_sent = 0
+    call endpoint_send(0, 26, "[DBG]tcpip_configuration\r\n")
+end
+
+event tcpip_dns_configuration(index, address)
+    call endpoint_send(0, 30, "[DBG]tcpip_dns_configuration\r\n")
+    if auth_sent = 1 then
+        return
+    end if
+    auth_sent = 1
+    if connected = 1 then
+        call flash_ps_load(FLASH_PS_KEY_APPL_STR1)(result, flash_result_len, flash_result_data(0:flash_result_len))
+
+        call endpoint_send(0 , 30, "[DBG]tcpip_dns_gethostbyname: ")
+        call endpoint_send(0, flash_result_len, flash_result_data(0:flash_result_len))
+        call endpoint_send(0, 2, "\r\n")
+
+        call tcpip_dns_gethostbyname(flash_result_len, flash_result_data(0:flash_result_len))(result)
+        if result != 0 then
+            call util_itoa(result)(flash_result_len, flash_result_data(0:flash_result_len))
+            call endpoint_send(0 , 11, "[DBG]error ")
+            call endpoint_send(0, flash_result_len, flash_result_data(0:flash_result_len))
+            call endpoint_send(0, 2, "\r\n")
+        end if
+    end if
+end

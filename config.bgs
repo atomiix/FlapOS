@@ -15,6 +15,7 @@ dim selected_ssid_password_len
 dim selected_ssid_password(255)
 
 dim handled
+dim should_reset
 
 export procedure start_conf_mode()
     call tcpip_configure(192.168.1.1, 255.255.255.0, 192.168.1.1, 0)
@@ -113,8 +114,13 @@ procedure handle_conf_request(request)
             call endpoint_send(0, 2, "\r\n")
             call flash_ps_save(FLASH_PS_KEY_CLIENT_PW, selected_ssid_password_len, selected_ssid_password(0:selected_ssid_password_len))(result)
         end if
+
         if selected_mode = APP_MODE_CLI then
-            # @ToDo: save endpoint
+            selected_endpoint_len = request_data_len - selected_ssid_password_len - 5
+            selected_endpoint(0:selected_endpoint_len) = request_data(selected_ssid_password_len + 5:selected_endpoint_len)
+            call endpoint_send(0, selected_endpoint_len, selected_endpoint(0:selected_endpoint_len))
+            call endpoint_send(0, 2, "\r\n")
+            call flash_ps_save(FLASH_PS_KEY_APPL_STR1, selected_endpoint_len, selected_endpoint(0:selected_endpoint_len))(result)
         end if
     end if
 end
@@ -124,6 +130,7 @@ export procedure config_https_api_request_finished(request)
     call endpoint_send(0, 23, "[DBG]request finished\r\n")
     
     handled = 0
+    should_reset = 0
     if request_resource_len = RESOURCE_SSIDS_LEN && memcmp(request_resource(0), RESOURCE_SSIDS(0), RESOURCE_SSIDS_LEN) then
         if request_method = HTTP_GET then
             call handle_ssids_request(request)
@@ -136,6 +143,7 @@ export procedure config_https_api_request_finished(request)
     if request_resource_len = RESOURCE_CONF_LEN && memcmp(request_resource(0), RESOURCE_CONF(0), RESOURCE_CONF_LEN) then
         if request_method = HTTP_POST then
             call handle_conf_request(request)
+            should_reset = 1
         else
             call method_not_allowed(HTTP_GET)
         end if
@@ -149,6 +157,10 @@ export procedure config_https_api_request_finished(request)
     
     call https_api_response(request, response_len, response(0:response_len))
     call https_api_response_finish()
+
+    if should_reset = 1 then
+        call system_reset(0)
+    end if
 end
 
 event sme_scan_sort_result(bssid, channel, rssi, snr, secure, ssid_len, ssid_data)
