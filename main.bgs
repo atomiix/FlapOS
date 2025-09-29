@@ -69,6 +69,8 @@ event system_boot(major, minor, patch, build, bootloader_version, tcpip_version,
     call hardware_io_port_config_direction(3, $06f0, $0000) # motors as output
     call hardware_io_port_config_direction(4, $007f, $007f) # switches as input
 
+    call hardware_external_interrupt_config($11, $0) # attach interrupt on buttons
+
     call flash_ps_load(FLASH_PS_KEY_APPL_NUM1)(result, flash_result_len, flash_result_data(0:flash_result_len))
     mode = flash_result_data(0:1)
 
@@ -273,5 +275,14 @@ event https_api_request_finished(request)
     end if
     if mode = APP_MODE_STA || mode = APP_MODE_AP then
         call server_https_api_request_finished(request)
+    end if
+end
+
+event hardware_external_interrupt(irq, interrupt)
+    if irq = 0 then
+        call endpoint_send(0, 20, "[DBG]Reset pressed\r\n")
+        call system_reset(0)
+    else
+        call endpoint_send(0, 18, "[DBG]WPS pressed\r\n")
     end if
 end
