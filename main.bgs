@@ -219,7 +219,7 @@ event sme_wifi_is_on(state)
         call start_ap_mode()
     end if
     if mode = APP_MODE_CONFIG then
-        call sme_start_scan(0, 0, 0)
+        call sme_start_ssid_scan(0, "")
     end if
 end
 

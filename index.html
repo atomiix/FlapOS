@@ -42,7 +42,7 @@
             const ssidList = document.querySelector('#ssid-list');
             
             const response = await fetch('/api/ssids');
-            const ssids = await response.json()
+            const ssids = await response.json();
             ssids.forEach(name => ssidList.innerHTML += `<li>${name}</li>`);
 
             const stepModeSelectContainer = document.querySelector('#step-mode-select');
@@ -66,6 +66,12 @@
             var selectedMode = 1;
             var selectedSSID = '';
 
+            const modeToFieldMap = {
+                1: {},
+                2: {ssid: () => selectedSSID, password: () => passwordInput.value},
+                3: {ssid: () => selectedSSID, password: () => passwordInput.value, endpoint: () => endpointInput.value}
+            };
+
             stepModeItems.forEach(item => {
                 item.addEventListener('click', () => {
                     const mode = item.dataset.mode;
@@ -77,8 +83,8 @@
             });
 
             ssidItems.forEach(item => item.addEventListener('click', evt => {
-                selectedSSID = [...ssidItems].indexOf(evt.target);
-                wifiName.innerText = evt.target.innerText;
+                selectedSSID = evt.target.innerText;
+                wifiName.innerText = selectedSSID;
                 modalContainer.style.display = '';
             }));
 
@@ -94,9 +100,18 @@
             };
 
             const sendConf = () => {
-                fetch('/api/conf', {
-                    method: 'POST',
-                    body: `${selectedMode}|${selectedSSID}|${passwordInput.value}|${endpointInput.value}`
+                var requests = [];
+                for (var field in modeToFieldMap[selectedMode]) {
+                    requests.push(fetch(`/api/conf/${field}`, {
+                        method: 'POST',
+                        body: modeToFieldMap[selectedMode][field]()
+                    }));
+                }
+                Promise.all(requests).finally(() => {
+                    requests.push(fetch(`/api/conf/mode`, {
+                        method: 'POST',
+                        body: selectedMode
+                    }));
                 });
                 closeModal();
                 stepWifiSelectContainer.style.display = 'none';
