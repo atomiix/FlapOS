@@ -53,6 +53,11 @@
             const modeStepMap = {ap: stepFinished, sta: stepWifiSelectContainer, cli: stepEnpointSelectContainer};
             const modeIdMap = {ap: 1, sta: 2, cli: 3};
             const modeCallback = {ap: () => sendConf(), sta: () => {}, cli: () => {}}
+            const modeToFieldMap = {
+                1: {mode: () => selectedMode},
+                2: {ssid: () => selectedSSID, password: () => passwordInput.value, mode: () => selectedMode},
+                3: {ssid: () => selectedSSID, password: () => passwordInput.value, endpoint: () => endpointInput.value, mode: () => selectedMode}
+            };
 
             const endpointInput = stepEnpointSelectContainer.querySelector('input');
             const validateEndpointButton = stepEnpointSelectContainer.querySelector('#validate-endpoint');
@@ -65,12 +70,6 @@
             const modalContainer = document.querySelector('.modal-container');
             var selectedMode = 1;
             var selectedSSID = '';
-
-            const modeToFieldMap = {
-                1: {},
-                2: {ssid: () => selectedSSID, password: () => passwordInput.value},
-                3: {ssid: () => selectedSSID, password: () => passwordInput.value, endpoint: () => endpointInput.value}
-            };
 
             stepModeItems.forEach(item => {
                 item.addEventListener('click', () => {
@@ -99,23 +98,16 @@
                 }
             };
 
-            const sendConf = () => {
-                var requests = [];
-                for (var field in modeToFieldMap[selectedMode]) {
-                    requests.push(fetch(`/api/conf/${field}`, {
-                        method: 'POST',
-                        body: modeToFieldMap[selectedMode][field]()
-                    }));
-                }
-                Promise.all(requests).finally(() => {
-                    requests.push(fetch(`/api/conf/mode`, {
-                        method: 'POST',
-                        body: selectedMode
-                    }));
-                });
+            const sendConf = async () => {
                 closeModal();
                 stepWifiSelectContainer.style.display = 'none';
                 stepFinished.style.display = '';
+                for (const field in modeToFieldMap[selectedMode]) {
+                    await fetch(`/api/conf/${field}`, {
+                        method: 'POST',
+                        body: modeToFieldMap[selectedMode][field]()
+                    });
+                }
             };
 
             validateButton.addEventListener('click', sendConf);
