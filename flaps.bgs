@@ -123,6 +123,7 @@ const FLAP_BLANK_ALT() = "BLANK"
 const FLAP_PERCENT_ALT() = "PERCENT"
 const FLAP_FULL_STAR_ALT() = "FULL_STAR"
 const FLAP_HEART_ALT() = "HEART"
+const FLAP_AMPERSAND_ALT() = "&"
 
 dim message_index
 dim buffer_index
@@ -131,379 +132,379 @@ dim found
 
 procedure lead_char_to_flap_index(lead_message_len, lead_message())
     if memcmp(lead_message(0), LEAD_BLANK(0), 5) then
-        buffer(0:1) = "-"
+        buffer(0:1) = 0
         buffer_index = buffer_index + 1
         message_index = message_index + 5
         return
     end if
     if memcmp(lead_message(0), LEAD_BLAST(0), 5) then
-        buffer(0:1) = "B"
+        buffer(0:1) = 1
         buffer_index = buffer_index + 1
         message_index = message_index + 5
         return
     end if
     if memcmp(lead_message(0), LEAD_LIKE_RU(0), 7) then
-        buffer(0:1) = "L"
+        buffer(0:1) = 2
         buffer_index = buffer_index + 1
         message_index = message_index + 7
         return
     end if
     if memcmp(lead_message(0), LEAD_LIKE_FR(0), 7) then
-        buffer(0:1) = "L"
+        buffer(0:1) = 4
         buffer_index = buffer_index + 1
         message_index = message_index + 7
         return
     end if
     if memcmp(lead_message(0), LEAD_LIKE_US_EN(0), 10) then
-        buffer(0:1) = "L"
+        buffer(0:1) = 5
         buffer_index = buffer_index + 1
         message_index = message_index + 10
         return
     end if
     if memcmp(lead_message(0), LEAD_LIKE_EN(0), 7) then
-        buffer(0:1) = "L"
+        buffer(0:1) = 6
         buffer_index = buffer_index + 1
         message_index = message_index + 7
         return
     end if
     if memcmp(lead_message(0), LEAD_LIKE_JA(0), 7) then
-        buffer(0:1) = "L"
+        buffer(0:1) = 7
         buffer_index = buffer_index + 1
         message_index = message_index + 7
         return
     end if
     if memcmp(lead_message(0), LEAD_LIKE_KO(0), 7) then
-        buffer(0:1) = "L"
+        buffer(0:1) = 8
         buffer_index = buffer_index + 1
         message_index = message_index + 7
         return
     end if
     if memcmp(lead_message(0), LEAD_LIKE_ZH(0), 7) then
-        buffer(0:1) = "L"
+        buffer(0:1) = 10
         buffer_index = buffer_index + 1
         message_index = message_index + 7
         return
     end if
     if memcmp(lead_message(0), LEAD_FOLLOW_US_ES(0), 12) then
-        buffer(0:1) = "F"
+        buffer(0:1) = 11
         buffer_index = buffer_index + 1
         message_index = message_index + 12
         return
     end if
     if memcmp(lead_message(0), LEAD_FOLLOW_US_PT(0), 12) then
-        buffer(0:1) = "F"
+        buffer(0:1) = 12
         buffer_index = buffer_index + 1
         message_index = message_index + 12
         return
     end if
     if memcmp(lead_message(0), LEAD_FOLLOW_US_RU(0), 12) then
-        buffer(0:1) = "F"
+        buffer(0:1) = 13
         buffer_index = buffer_index + 1
         message_index = message_index + 12
         return
     end if
     if memcmp(lead_message(0), LEAD_FOLLOW_US_FR(0), 12) then
-        buffer(0:1) = "F"
+        buffer(0:1) = 14
         buffer_index = buffer_index + 1
         message_index = message_index + 12
         return
     end if
     if memcmp(lead_message(0), LEAD_FOLLOW_US_EN(0), 12) then
-        buffer(0:1) = "F"
+        buffer(0:1) = 16
         buffer_index = buffer_index + 1
         message_index = message_index + 12
         return
     end if
     if memcmp(lead_message(0), LEAD_FOLLOW_US_IT(0), 12) then
-        buffer(0:1) = "F"
+        buffer(0:1) = 17
         buffer_index = buffer_index + 1
         message_index = message_index + 12
         return
     end if
     if memcmp(lead_message(0), LEAD_FOLLOW_US_DE(0), 12) then
-        buffer(0:1) = "F"
+        buffer(0:1) = 18
         buffer_index = buffer_index + 1
         message_index = message_index + 12
         return
     end if
     if memcmp(lead_message(0), LEAD_FOLLOW_US_JP(0), 12) then
-        buffer(0:1) = "F"
+        buffer(0:1) = 19
         buffer_index = buffer_index + 1
         message_index = message_index + 12
         return
     end if
     if memcmp(lead_message(0), LEAD_FOLLOW_US_KO(0), 12) then
-        buffer(0:1) = "F"
+        buffer(0:1) = 20
         buffer_index = buffer_index + 1
         message_index = message_index + 12
         return
     end if
     if memcmp(lead_message(0), LEAD_FOLLOW_US_ZH(0), 12) then
-        buffer(0:1) = "F"
+        buffer(0:1) = 21
         buffer_index = buffer_index + 1
         message_index = message_index + 12
         return
     end if
     if memcmp(lead_message(0), LEAD_CHECK_IN_PT(0), 11) then
-        buffer(0:1) = "C"
+        buffer(0:1) = 22
         buffer_index = buffer_index + 1
         message_index = message_index + 11
         return
     end if
     if memcmp(lead_message(0), LEAD_CHECK_IN_RU(0), 11) then
-        buffer(0:1) = "C"
+        buffer(0:1) = 23
         buffer_index = buffer_index + 1
         message_index = message_index + 11
         return
     end if
     if memcmp(lead_message(0), LEAD_CHECK_IN_JP(0), 11) then
-        buffer(0:1) = "C"
+        buffer(0:1) = 24
         buffer_index = buffer_index + 1
         message_index = message_index + 11
         return
     end if
     if memcmp(lead_message(0), LEAD_CHECK_IN_KO(0), 11) then
-        buffer(0:1) = "C"
+        buffer(0:1) = 25
         buffer_index = buffer_index + 1
         message_index = message_index + 11
         return
     end if
     if memcmp(lead_message(0), LEAD_CHECK_IN_ZH(0), 11) then
-        buffer(0:1) = "C"
+        buffer(0:1) = 26
         buffer_index = buffer_index + 1
         message_index = message_index + 11
         return
     end if
     if memcmp(lead_message(0), LEAD_CHECK_IN_EN(0), 11) then
-        buffer(0:1) = "C"
+        buffer(0:1) = 27
         buffer_index = buffer_index + 1
         message_index = message_index + 11
         return
     end if
     if memcmp(lead_message(0), LEAD_TWITTER(0), 7) then
-        buffer(0:1) = "T"
+        buffer(0:1) = 30
         buffer_index = buffer_index + 1
         message_index = message_index + 7
         return
     end if
     if memcmp(lead_message(0), LEAD_ZOMATO(0), 6) then
-        buffer(0:1) = "Z"
+        buffer(0:1) = 31
         buffer_index = buffer_index + 1
         message_index = message_index + 6
         return
     end if
     if memcmp(lead_message(0), LEAD_YOUTUBE(0), 7) then
-        buffer(0:1) = "Y"
+        buffer(0:1) = 32
         buffer_index = buffer_index + 1
         message_index = message_index + 7
         return
     end if
     if memcmp(lead_message(0), LEAD_INSTAGRAM(0), 9) then
-        buffer(0:1) = "C"
+        buffer(0:1) = 34
         buffer_index = buffer_index + 1
         message_index = message_index + 9
         return
     end if
     if memcmp(lead_message(0), LEAD_GOOGLE_STATS(0), 12) then
-        buffer(0:1) = "G"
+        buffer(0:1) = 35
         buffer_index = buffer_index + 1
         message_index = message_index + 12
         return
     end if
     if memcmp(lead_message(0), LEAD_VKONTAKTE(0), 9) then
-        buffer(0:1) = "V"
+        buffer(0:1) = 36
         buffer_index = buffer_index + 1
         message_index = message_index + 9
         return
     end if
     if memcmp(lead_message(0), LEAD_FOURSQUARE(0), 10) then
-        buffer(0:1) = "F"
+        buffer(0:1) = 37
         buffer_index = buffer_index + 1
         message_index = message_index + 10
         return
     end if
     if memcmp(lead_message(0), LEAD_SWARM(0), 5) then
-        buffer(0:1) = "S"
+        buffer(0:1) = 38
         buffer_index = buffer_index + 1
         message_index = message_index + 5
         return
     end if
     if memcmp(lead_message(0), LEAD_YELP(0), 4) then
-        buffer(0:1) = "Y"
+        buffer(0:1) = 40
         buffer_index = buffer_index + 1
         message_index = message_index + 4
         return
     end if
     if memcmp(lead_message(0), LEAD_TRIPADVISOR(0), 11) then
-        buffer(0:1) = "T"
+        buffer(0:1) = 41
         buffer_index = buffer_index + 1
         message_index = message_index + 11
         return
     end if
     if memcmp(lead_message(0), LEAD_WEIBO(0), 5) then
-        buffer(0:1) = "W"
+        buffer(0:1) = 42
         buffer_index = buffer_index + 1
         message_index = message_index + 5
         return
     end if
     if memcmp(lead_message(0), LEAD_DIANPING(0), 8) then
-        buffer(0:1) = "D"
+        buffer(0:1) = 43
         buffer_index = buffer_index + 1
         message_index = message_index + 8
         return
     end if
     if memcmp(lead_message(0), LEAD_FACEBOOK(0), 8) then
-        buffer(0:1) = "F"
+        buffer(0:1) = 44
         buffer_index = buffer_index + 1
         message_index = message_index + 8
         return
     end if
     if memcmp(lead_message(0), LEAD_SMILEY(0), 2) then
-        buffer(0:1) = ")"
+        buffer(0:1) = 46
         buffer_index = buffer_index + 1
         message_index = message_index + 2
         return
     end if
     if memcmp(lead_message(0), LEAD_THUMBSUP(0), 3) then
-        buffer(0:1) = "i"
+        buffer(0:1) = 47
         buffer_index = buffer_index + 1
         message_index = message_index + 3
         return
     end if
     if memcmp(lead_message(0), LEAD_THANKS_ES(0), 9) then
-        buffer(0:1) = "T"
+        buffer(0:1) = 48
         buffer_index = buffer_index + 1
         message_index = message_index + 9
         return
     end if
     if memcmp(lead_message(0), LEAD_THANKS_PT(0), 9) then
-        buffer(0:1) = "T"
+        buffer(0:1) = 49
         buffer_index = buffer_index + 1
         message_index = message_index + 9
         return
     end if
     if memcmp(lead_message(0), LEAD_THANKS_RU(0), 9) then
-        buffer(0:1) = "T"
+        buffer(0:1) = 50
         buffer_index = buffer_index + 1
         message_index = message_index + 9
         return
     end if
     if memcmp(lead_message(0), LEAD_THANKS_FR(0), 9) then
-        buffer(0:1) = "T"
+        buffer(0:1) = 52
         buffer_index = buffer_index + 1
         message_index = message_index + 9
         return
     end if
     if memcmp(lead_message(0), LEAD_THANKS_EN(0), 9) then
-        buffer(0:1) = "T"
+        buffer(0:1) = 53
         buffer_index = buffer_index + 1
         message_index = message_index + 9
         return
     end if
     if memcmp(lead_message(0), LEAD_THANKS_IT(0), 9) then
-        buffer(0:1) = "T"
+        buffer(0:1) = 54
         buffer_index = buffer_index + 1
         message_index = message_index + 9
         return
     end if
     if memcmp(lead_message(0), LEAD_THANKS_DE(0), 9) then
-        buffer(0:1) = "T"
+        buffer(0:1) = 55
         buffer_index = buffer_index + 1
         message_index = message_index + 9
         return
     end if
     if memcmp(lead_message(0), LEAD_THANKS_JA(0), 9) then
-        buffer(0:1) = "T"
+        buffer(0:1) = 56
         buffer_index = buffer_index + 1
         message_index = message_index + 9
         return
     end if
     if memcmp(lead_message(0), LEAD_THANKS_KO(0), 9) then
-        buffer(0:1) = "T"
+        buffer(0:1) = 58
         buffer_index = buffer_index + 1
         message_index = message_index + 9
         return
     end if
     if memcmp(lead_message(0), LEAD_THANKS_ZH(0), 9) then
-        buffer(0:1) = "T"
+        buffer(0:1) = 59
         buffer_index = buffer_index + 1
         message_index = message_index + 9
         return
     end if
     if memcmp(lead_message(0), LEAD_SMILEY_ALT(0), 6) then
-        buffer(0:1) = ")"
+        buffer(0:1) = 46
         buffer_index = buffer_index + 1
         message_index = message_index + 6
         return
     end if
     if memcmp(lead_message(0), LEAD_SMILEY_ALT2(0), 3) then
-        buffer(0:1) = ")"
+        buffer(0:1) = 46
         buffer_index = buffer_index + 1
         message_index = message_index + 3
         return
     end if
     if memcmp(lead_message(0), LEAD_THUMBSUP_ALT(0), 8) then
-        buffer(0:1) = "i"
+        buffer(0:1) = 47
         buffer_index = buffer_index + 1
         message_index = message_index + 8
         return
     end if
     if memcmp(lead_message(0), FLAP_1(0), 1) then
-        buffer(0:1) = "1"
+        buffer(0:1) = 28
         buffer_index = buffer_index + 1
         message_index = message_index + 1
         return
     end if
     if memcmp(lead_message(0), FLAP_2(0), 1) then
-        buffer(0:1) = "2"
+        buffer(0:1) = 33
         buffer_index = buffer_index + 1
         message_index = message_index + 1
         return
     end if
     if memcmp(lead_message(0), FLAP_3(0), 1) then
-        buffer(0:1) = "3"
+        buffer(0:1) = 39
         buffer_index = buffer_index + 1
         message_index = message_index + 1
         return
     end if
     if memcmp(lead_message(0), FLAP_4(0), 1) then
-        buffer(0:1) = "4"
+        buffer(0:1) = 45
         buffer_index = buffer_index + 1
         message_index = message_index + 1
         return
     end if
     if memcmp(lead_message(0), FLAP_5(0), 1) then
-        buffer(0:1) = "5"
+        buffer(0:1) = 51
         buffer_index = buffer_index + 1
         message_index = message_index + 1
         return
     end if
     if memcmp(lead_message(0), FLAP_6(0), 1) then
-        buffer(0:1) = "6"
+        buffer(0:1) = 57
         buffer_index = buffer_index + 1
         message_index = message_index + 1
         return
     end if
     if memcmp(lead_message(0), FLAP_7(0), 1) then
-        buffer(0:1) = "7"
+        buffer(0:1) = 3
         buffer_index = buffer_index + 1
         message_index = message_index + 1
         return
     end if
     if memcmp(lead_message(0), FLAP_8(0), 1) then
-        buffer(0:1) = "8"
+        buffer(0:1) = 9
         buffer_index = buffer_index + 1
         message_index = message_index + 1
         return
     end if
     if memcmp(lead_message(0), FLAP_9(0), 1) then
-        buffer(0:1) = "9"
+        buffer(0:1) = 15
         buffer_index = buffer_index + 1
         message_index = message_index + 1
         return
     end if
     if memcmp(lead_message(0), FLAP_HASHTAG(0), 1) then
-        buffer(0:1) = "#"
+        buffer(0:1) = 29
         buffer_index = buffer_index + 1
         message_index = message_index + 1
         return
@@ -512,220 +513,223 @@ end
 
 procedure char_to_flap_index(message_len, message())
     if memcmp(message(0), FLAP_EMPTY_BUBBLE(0), 12) then
-        buffer(buffer_index:1) = "O"
+        buffer(buffer_index:1) = 1
         message_index = message_index + 12
         return
     end if
     if memcmp(message(0), FLAP_FULL_BUBBLE(0), 11) then
-        buffer(buffer_index:1) = "0"
+        buffer(buffer_index:1) = 43
         message_index = message_index + 11
         return
     end if
     if memcmp(message(0), FLAP_HALF_BUBBLE(0), 11) then
-        buffer(buffer_index:1) = "U"
+        buffer(buffer_index:1) = 52
         message_index = message_index + 10
         return
     end if
     if memcmp(message(0), FLAP_EMPTY_STAR(0), 10) then
-        buffer(buffer_index:1) = ")"
+        buffer(buffer_index:1) = 55
         message_index = message_index + 10
         return
     end if
     if memcmp(message(0), FLAP_HALF_STAR(0), 9) then
-        buffer(buffer_index:1) = "("
+        buffer(buffer_index:1) = 54
         message_index = message_index + 9
         return
     end if
     if memcmp(message(0), FLAP_FULL_STAR_ALT(0), 9) then
-        buffer(buffer_index:1) = "*"
+        buffer(buffer_index:1) = 53
         message_index = message_index + 9
         return
     end if
     if memcmp(message(0), FLAP_PERCENT_ALT(0), 7) then
-        buffer(buffer_index:1) = "%"
+        buffer(buffer_index:1) = 58
         message_index = message_index + 7
         return
     end if
     if memcmp(message(0), FLAP_BLANK2(0), 6) then
-        buffer(buffer_index:1) = "-"
+        buffer(buffer_index:1) = 56
         message_index = message_index + 6
         return
     end if
     if memcmp(message(0), FLAP_BLANK_ALT(0), 5) then
-        buffer(buffer_index:1) = "-"
+        buffer(buffer_index:1) = 0
         message_index = message_index + 5
         return
     end if
     if memcmp(message(0), FLAP_HEART_ALT(0), 5) then
-        buffer(buffer_index:1) = "<"
+        buffer(buffer_index:1) = 34
         message_index = message_index + 5
         return
     end if
+    if memcmp(message(0), FLAP_AMPERSAND(0), 3) then
+        buffer(buffer_index:1) = 44
+    end if
     if memcmp(message(0), FLAP_HEART(0), 2) then
-        buffer(buffer_index:1) = "<"
+        buffer(buffer_index:1) = 34
         message_index = message_index + 2
         return
     end if
     if memcmp(message(0), FLAP_ARROW(0), 2) then
-        buffer(buffer_index:1) = ">"
+        buffer(buffer_index:1) = 47
         message_index = message_index + 2
         return
     end if
+    if memcmp(message(0), FLAP_POUND(0), 2) then
+        buffer(buffer_index:1) = 38
+    end if
+    if memcmp(message(0), FLAP_YEN(0), 2) then
+        buffer(buffer_index:1) = 39
+    end if
     if memcmp(message(0), FLAP_BLANK(0), 1) then
-        buffer(buffer_index:1) = "-"
+        buffer(buffer_index:1) = 0
     end if
     if memcmp(message(0), FLAP_SLASH(0), 1) then
-        buffer(buffer_index:1) = "/"
+        buffer(buffer_index:1) = 7
     end if
     if memcmp(message(0), FLAP_EURO(0), 1) then
-        buffer(buffer_index:1) = "€"
+        buffer(buffer_index:1) = 35
     end if
     if memcmp(message(0), FLAP_DOLLAR(0), 1) then
-        buffer(buffer_index:1) = "$"
-    end if
-    if memcmp(message(0), FLAP_POUND(0), 1) then
-        buffer(buffer_index:1) = "£"
-    end if
-    if memcmp(message(0), FLAP_YEN(0), 1) then
-        buffer(buffer_index:1) = "¥"
+        buffer(buffer_index:1) = 36
     end if
     if memcmp(message(0), FLAP_PLUS(0), 1) then
-        buffer(buffer_index:1) = "+"
+        buffer(buffer_index:1) = 40
     end if
     if memcmp(message(0), FLAP_QUESTION_MARK(0), 1) then
-        buffer(buffer_index:1) = "?"
+        buffer(buffer_index:1) = 41
     end if
     if memcmp(message(0), FLAP_EXCLAMATION_MARK(0), 1) then
-        buffer(buffer_index:1) = "!"
+        buffer(buffer_index:1) = 42
     end if
-    if memcmp(message(0), FLAP_AMPERSAND(0), 3) then
-        buffer(buffer_index:1) = "&"
+    if memcmp(message(0), FLAP_AMPERSAND_ALT(0), 1) then
+        buffer(buffer_index:1) = 44
     end if
     if memcmp(message(0), FLAP_AT(0), 1) then
-        buffer(buffer_index:1) = "@"
+        buffer(buffer_index:1) = 45
     end if
     if memcmp(message(0), FLAP_HASHTAG(0), 1) then
-        buffer(buffer_index:1) = "#"
+        buffer(buffer_index:1) = 46
     end if
     if memcmp(message(0), FLAP_COLON(0), 1) then
-        buffer(buffer_index:1) = ":"
+        buffer(buffer_index:1) = 48
     end if
     if memcmp(message(0), FLAP_PERIOD(0), 1) then
-        buffer(buffer_index:1) = "."
+        buffer(buffer_index:1) = 50
     end if
     if memcmp(message(0), FLAP_FULL_STAR(0), 1) then
-        buffer(buffer_index:1) = "*"
+        buffer(buffer_index:1) = 53
     end if
     if memcmp(message(0), FLAP_PERCENT(0), 1) then
-        buffer(buffer_index:1) = "%"
+        buffer(buffer_index:1) = 58
     end if
     if memcmp(message(0), FLAP_A(0), 1) then
-        buffer(buffer_index:1) = "A"
+        buffer(buffer_index:1) = 3
     end if
     if memcmp(message(0), FLAP_B(0), 1) then
-        buffer(buffer_index:1) = "B"
+        buffer(buffer_index:1) = 4
     end if
     if memcmp(message(0), FLAP_C(0), 1) then
-        buffer(buffer_index:1) = "C"
+        buffer(buffer_index:1) = 5
     end if
     if memcmp(message(0), FLAP_D(0), 1) then
-        buffer(buffer_index:1) = "D"
+        buffer(buffer_index:1) = 6
     end if
     if memcmp(message(0), FLAP_E(0), 1) then
-        buffer(buffer_index:1) = "E"
+        buffer(buffer_index:1) = 8
     end if
     if memcmp(message(0), FLAP_F(0), 1) then
-        buffer(buffer_index:1) = "F"
+        buffer(buffer_index:1) = 9
     end if
     if memcmp(message(0), FLAP_G(0), 1) then
-        buffer(buffer_index:1) = "G"
+        buffer(buffer_index:1) = 10
     end if
     if memcmp(message(0), FLAP_H(0), 1) then
-        buffer(buffer_index:1) = "H"
+        buffer(buffer_index:1) = 11
     end if
     if memcmp(message(0), FLAP_I(0), 1) then
-        buffer(buffer_index:1) = "I"
+        buffer(buffer_index:1) = 12
     end if
     if memcmp(message(0), FLAP_J(0), 1) then
-        buffer(buffer_index:1) = "J"
+        buffer(buffer_index:1) = 14
     end if
     if memcmp(message(0), FLAP_K(0), 1) then
-        buffer(buffer_index:1) = "K"
+        buffer(buffer_index:1) = 15
     end if
     if memcmp(message(0), FLAP_L(0), 1) then
-        buffer(buffer_index:1) = "L"
+        buffer(buffer_index:1) = 16
     end if
     if memcmp(message(0), FLAP_M(0), 1) then
-        buffer(buffer_index:1) = "M"
+        buffer(buffer_index:1) = 17
     end if
     if memcmp(message(0), FLAP_N(0), 1) then
-        buffer(buffer_index:1) = "N"
+        buffer(buffer_index:1) = 18
     end if
     if memcmp(message(0), FLAP_O(0), 1) then
-        buffer(buffer_index:1) = "O"
+        buffer(buffer_index:1) = 20
     end if
     if memcmp(message(0), FLAP_P(0), 1) then
-        buffer(buffer_index:1) = "P"
+        buffer(buffer_index:1) = 21
     end if
     if memcmp(message(0), FLAP_Q(0), 1) then
-        buffer(buffer_index:1) = "Q"
+        buffer(buffer_index:1) = 22
     end if
     if memcmp(message(0), FLAP_R(0), 1) then
-        buffer(buffer_index:1) = "R"
+        buffer(buffer_index:1) = 23
     end if
     if memcmp(message(0), FLAP_S(0), 1) then
-        buffer(buffer_index:1) = "S"
+        buffer(buffer_index:1) = 24
     end if
     if memcmp(message(0), FLAP_T(0), 1) then
-        buffer(buffer_index:1) = "T"
+        buffer(buffer_index:1) = 26
     end if
     if memcmp(message(0), FLAP_U(0), 1) then
-        buffer(buffer_index:1) = "U"
+        buffer(buffer_index:1) = 27
     end if
     if memcmp(message(0), FLAP_V(0), 1) then
-        buffer(buffer_index:1) = "V"
+        buffer(buffer_index:1) = 28
     end if
     if memcmp(message(0), FLAP_W(0), 1) then
-        buffer(buffer_index:1) = "W"
+        buffer(buffer_index:1) = 29
     end if
     if memcmp(message(0), FLAP_X(0), 1) then
-        buffer(buffer_index:1) = "X"
+        buffer(buffer_index:1) = 30
     end if
     if memcmp(message(0), FLAP_Y(0), 1) then
-        buffer(buffer_index:1) = "Y"
+        buffer(buffer_index:1) = 33
     end if
     if memcmp(message(0), FLAP_Z(0), 1) then
-        buffer(buffer_index:1) = "Z"
+        buffer(buffer_index:1) = 32
     end if
     if memcmp(message(0), FLAP_0(0), 1) then
-        buffer(buffer_index:1) = "0"
+        buffer(buffer_index:1) = 49
     end if
     if memcmp(message(0), FLAP_1(0), 1) then
-        buffer(buffer_index:1) = "1"
+        buffer(buffer_index:1) = 2
     end if
     if memcmp(message(0), FLAP_2(0), 1) then
-        buffer(buffer_index:1) = "2"
+        buffer(buffer_index:1) = 13
     end if
     if memcmp(message(0), FLAP_3(0), 1) then
-        buffer(buffer_index:1) = "3"
+        buffer(buffer_index:1) = 25
     end if
     if memcmp(message(0), FLAP_4(0), 1) then
-        buffer(buffer_index:1) = "4"
+        buffer(buffer_index:1) = 37
     end if
     if memcmp(message(0), FLAP_5(0), 1) then
-        buffer(buffer_index:1) = "5"
+        buffer(buffer_index:1) = 19
     end if
     if memcmp(message(0), FLAP_6(0), 1) then
-        buffer(buffer_index:1) = "6"
+        buffer(buffer_index:1) = 31
     end if
     if memcmp(message(0), FLAP_7(0), 1) then
-        buffer(buffer_index:1) = "7"
+        buffer(buffer_index:1) = 59
     end if
     if memcmp(message(0), FLAP_8(0), 1) then
-        buffer(buffer_index:1) = "8"
+        buffer(buffer_index:1) = 57
     end if
     if memcmp(message(0), FLAP_9(0), 1) then
-        buffer(buffer_index:1) = "9"
+        buffer(buffer_index:1) = 51
     end if
 
     message_index = message_index + 1
@@ -734,9 +738,8 @@ end
 export procedure get_index_for_flap(message_len, message())
     message_index = 0
     buffer_index = 0
-    #buffer(0:4) = $0000
-    #buffer(4:3) = $000
-    buffer(0:7) = "_______"
+    buffer(0:4) = $00000000
+    buffer(4:3) = $000000
 
     call lead_char_to_flap_index(message_len, message(0:message_len))
     
@@ -745,15 +748,13 @@ export procedure get_index_for_flap(message_len, message())
     else
         message_index = 0
         buffer_index = 1
-        buffer(0:1) = "_"
+        buffer(0:1) = $00
     end if
     
-    while message_index < message_len && buffer_index < 7       
+    while message_index < message_len && buffer_index < 7
         call char_to_flap_index(message_len - message_index, message(message_index:message_len - message_index))
         buffer_index = buffer_index + 1
     end while
 
-    call endpoint_send(0, 8, "buffer: ")
-    call endpoint_send(0, 7, buffer(0:7))
-    call endpoint_send(0, 2, "\r\n")
+    memcpy(targets(0), buffer(0), 7)
 end

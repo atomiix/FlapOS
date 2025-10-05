@@ -32,7 +32,7 @@ end
 
 procedure handle_request()
     if memcmp(request_data(0), MESSAGE_DATA(0), 8) then
-        call endpoint_send(0, 20, "[DBG]message found\r\n")
+        call endpoint_send(0, 20, "[DBG]message found: ")
         
         message_len = 0
         while message_len < 85 && (8 + message_len) < request_data_len && request_data(8 + message_len:1) != "&" && request_data(8 + message_len:1) != "\r"
@@ -43,6 +43,7 @@ procedure handle_request()
         call endpoint_send(0, message_len, message(0:message_len))
         call endpoint_send(0, 2,"\r\n")
         call get_index_for_flap(message_len, message(0:message_len))
+        call run()
     else
         call endpoint_send(0, 24, "[DBG]message not found\r\n")
     end if
@@ -62,10 +63,4 @@ export procedure server_https_api_request_finished(request)
 
     call https_api_response(request, response_len, response(0:response_len))
     call https_api_response_finish()
-
-    # call hardware_io_port_config_direction(4, $0070, $0070) # right switches as input
-    # targets(0:1) = targets(0:1) + 1
-    # call run()
-    # call hardware_set_soft_timer(, 0, 1)
-
 end

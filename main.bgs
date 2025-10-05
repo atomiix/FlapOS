@@ -17,7 +17,8 @@ dim motor_index
 dim motor_ons(7)
 dim positions(7)
 dim previous_reads(7)
-dim targets(7)
+
+export dim targets(7)
 
 export const HTTP_GET = 0
 export const HTTP_POST = 2
@@ -41,10 +42,10 @@ procedure init_motors()
     motor_ons(4:3) = $000
     positions(0:4) = $80808080
     positions(4:3) = $808080
-    targets(0:4) = $25190d1c
-    targets(4:3) = $3b1f13
-    previous_reads(0:4) = $01102040
-    previous_reads(4:3) = $040802
+    targets(0:4) = $00000000
+    targets(4:3) = $000000
+    previous_reads(0:4) = $00000000
+    previous_reads(4:3) = $000000
 end
 
 export procedure run()
@@ -192,7 +193,7 @@ event hardware_soft_timer(handle)
 end
 
 import "server.bgs"
-import "cli.bgs"
+import "client.bgs"
 
 procedure connect_to_ssid() 
     call endpoint_send(0, 27, "[DBG]conneting to ssid...\r\n")

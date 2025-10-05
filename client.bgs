@@ -5,9 +5,11 @@ const set_counter_value_type = $02000000
 dim ip_address(4)
 dim ip_address_len
 dim endpoint_ip(4)
+dim result_endpoint
 dim connected
 dim auth_sent
 dim debug(32)
+dim while_counter
 
 # event sme_connected
 export procedure cli_sme_connected(status, hw_interface, bssid)
@@ -23,9 +25,7 @@ export procedure cli_sme_disconnected(reason, hw_interface)
     connected = 0
 end
 
-event tcpip_dns_gethostbyname_result(dns_result, address, name_len, name_data)
-    call endpoint_send(0 , 27, "[DBG]endpoint resolves to: ")
-
+procedure debug_ip_addr(address)
     call util_itoa(address & $FF)(ip_address_len, debug(0:ip_address_len))
     call endpoint_send(0, ip_address_len, debug(0:ip_address_len))
     call endpoint_send(0, 1, ".")
@@ -42,13 +42,18 @@ event tcpip_dns_gethostbyname_result(dns_result, address, name_len, name_data)
     call endpoint_send(0, ip_address_len, debug(0:ip_address_len))
 
     call endpoint_send(0, 2, "\r\n")
+end
 
-    call tcpip_tcp_connect(address, 443, -1)
+event tcpip_dns_gethostbyname_result(dns_result, address, name_len, name_data)
+    call endpoint_send(0 , 27, "[DBG]endpoint resolves to: ")
+    call debug_ip_addr(address)
+
+    ip_address(0:4) = address
+    call tcpip_tcp_connect(ip_address(0:4), 443, -1)
 end
 
 event endpoint_data(endpoint, data_len, data_data)
     call endpoint_send(0, 20, "[DBG]endpoint data\r\n")
-    call endpoint_send(0, data_len, data_data(0:data_len))
 
     if data_len = 8 then
         if data_data(4:4) = echo_type then
@@ -60,22 +65,55 @@ event endpoint_data(endpoint, data_len, data_data)
         end if
     end if
     if data_len = 15 && data_data(4:4) = set_counter_value_type then
-        call endpoint_send(0, 33, "[DBG]set_counter_value received\r\n")
+        call endpoint_send(0, 45, "[DBG]set_counter_value received\r\n[DBG]value: ")
+        memcpy(targets(0), data_data(8), 7)
+        while_counter = 0
+        while while_counter < 7
+            call util_itoa(targets(while_counter:1))(ip_address_len, debug(0:ip_address_len))
+            call endpoint_send(0, ip_address_len, debug(0:ip_address_len))
+            call endpoint_send(0, 1, " ")
+            while_counter = while_counter + 1
+        end while
+        call endpoint_send(0, 2, "\r\n")
+        call run()
     end if
 end
 
-event tcpip_endpoint_status(endpoint, local_ip, local_port, remote_ip, remote_port)
-    # ToDo: use serial number as first arg
-    call endpoint_send(0, 28, "[DBG]tcpip_endpoint_status\r\n")
-    debug(0:4) = $13000000
-    debug(4:4) = $05000000
-    debug(8:4) = $01000000
-    debug(12:1) = "a"
-    debug(13:4) = $01000000
-    debug(17:1) = "b"
-    debug(18:4) = $01000000
-    debug(22:1) = "c"
-    call endpoint_send(endpoint, 23, debug(0:23))
+event endpoint_status(endpoint, type, streaming, destination, active)
+    call endpoint_send(0, 22, "[DBG]endpoint_status\r\n")
+    call endpoint_send(0, 14, "[DBG]enpoint: ")
+    call util_itoa(endpoint)(flash_result_len, debug(0:flash_result_len))
+    call endpoint_send(0, flash_result_len, debug(0:flash_result_len))
+    call endpoint_send(0, 2, "\r\n")
+    call endpoint_send(0, 11, "[DBG]type: ")
+    call util_itoa(type)(flash_result_len, debug(0:flash_result_len))
+    call endpoint_send(0, flash_result_len, debug(0:flash_result_len))
+    call endpoint_send(0, 2, "\r\n")
+
+    if type = 128 then
+        call endpoint_close(endpoint)
+        call tcpip_tcp_connect(ip_address(0:4), 443, -1)
+    end if
+
+    if type = 4 && active = 1 then
+        debug(0:4) = $13000000
+        debug(4:4) = $05000000
+        debug(8:4) = $01000000
+        debug(12:1) = "a"
+        debug(13:4) = $01000000
+        debug(17:1) = "b"
+        debug(18:4) = $01000000
+        debug(22:1) = "c"
+        call endpoint_send(endpoint, 23, debug(0:23))(result, result_endpoint)
+        if result = 0 then
+            call endpoint_send(0, 16, "[DBG]auth sent\r\n")
+        else
+            call endpoint_send(0, 17, "[DBG]auth error: ")
+            call util_itoa(result)(flash_result_len, flash_result_data(0:flash_result_len))
+            call endpoint_send(0, flash_result_len, flash_result_data(0:flash_result_len))
+            call endpoint_send(0, 2, "\r\n")
+        end if
+    end if
 end
 
 event tcpip_configuration(address, netmask, gateway, use_dhcp)
