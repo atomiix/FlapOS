@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>FlapOS</title>
+        <!-- <link rel="stylesheet" href="style.css" media="screen"/> -->
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+    </head>
+    <body>
+        <button id="connect">Connect</button>
+        <script type="module">
+            const connectBtn = document.getElementById("connect");
+            connectBtn.addEventListener("click", async () => {
+                const port = await navigator.serial.requestPort();
+                await port.open({baudRate: 115200});
+                while (port.readable) {
+                    const reader = port.readable.getReader();
+                    while (true) {
+                        const { value, done } = await reader.read();
+                        console.log(value);
+                    }
+                }
+                console.log(port.readable);
+            });
+
+        </script>
+    </body>
+</html>
