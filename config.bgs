@@ -3,6 +3,9 @@ const API_STORE_SSID = 1
 const API_STORE_PASSWORD = 2
 const API_STORE_ENDPOINT = 3
 
+const CONFIG_DOMAIN() = "flapos.setup"
+const CONFIG_DOMAIN_LEN = 12
+
 const RESOURCE_SSIDS() = "/api/ssids"
 const RESOURCE_SSIDS_LEN = 10
 const RESOURCE_CONF() = "/api/conf"
@@ -49,7 +52,9 @@ end
 export procedure config_sme_ap_mode_started(hw_interface)
     call https_add_path(0, 1, "/")
     call https_add_path(1, 5, "/api/")
-    call https_enable(1, 1, 0)
+    call flash_ps_save(FLASH_PS_KEY_DNSS_URL, CONFIG_DOMAIN_LEN, CONFIG_DOMAIN(0:CONFIG_DOMAIN_LEN))
+    call flash_ps_save(FLASH_PS_KEY_DNSS_ANY_URL, 1, 1)
+    call https_enable(1, 1, 1)
     call endpoint_send(0, 22, "[DBG]AP mode started\r\n")
 end
 
