@@ -1,0 +1,48 @@
+name: Mirror release asset to S3
+
+on:
+  release:
+    types: [published, edited]
+
+env:
+  BUCKET_NAME : "flapos-releases"
+
+jobs:
+  mirror:
+    permissions:
+      actions: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for asset
+        id: check-asset
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const {data: release} = await github.rest.repos.getReleaseByTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag: context.ref.substring('refs/tags/'.length)
+            });
+
+            if (release.assets.length > 0) {
+              core.setOutput('assetUrl', release.assets[0].browser_download_url);
+              core.setOutput('assetFilename', release.assets[0].name);
+              core.setOutput('tagName', release.tag_name);
+            } else {
+              core.notice('No asset found');
+              core.setOutput('skip', true);
+            }
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v5.1.0
+        if: ${{ steps.check-asset.outputs.skip != 'true' }}
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-3
+
+      - name: Upload asset to S3 bucket
+        if: ${{ steps.check-asset.outputs.skip != 'true' }}
+        run: |
+          curl -L ${{ steps.check-asset.outputs.assetUrl }} > ${{ steps.check-asset.outputs.assetFilename }}
+          aws s3 cp ${{ steps.check-asset.outputs.assetFilename }} s3://${{ env.BUCKET_NAME }}/${{ steps.check-asset.outputs.tagName }}/
