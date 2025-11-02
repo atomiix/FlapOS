@@ -9,6 +9,7 @@ dim result_endpoint
 dim connected
 dim auth_sent
 dim debug(32)
+dim auth_command(50)
 dim while_counter
 
 # event sme_connected
@@ -96,15 +97,21 @@ event endpoint_status(endpoint, type, streaming, destination, active)
     end if
 
     if type = 4 && active = 1 then
-        debug(0:4) = $13000000
-        debug(4:4) = $05000000
-        debug(8:4) = $01000000
-        debug(12:1) = "a"
-        debug(13:4) = $01000000
-        debug(17:1) = "b"
-        debug(18:4) = $01000000
-        debug(22:1) = "c"
-        call endpoint_send(endpoint, 23, debug(0:23))(result, result_endpoint)
+        auth_command(0:4) = $2e000000 # message length
+        auth_command(4:4) = $05000000 # message type
+        auth_command(8:4) = $0F000000 # serial length
+        auth_command(27: 4) = $0F000000 # password length
+        auth_command(46: 4) = $00000000 # email length
+
+        # Serial Number
+        call flash_ps_load(FLASH_PS_KEY_SERIAL_NUMBER)(result, flash_result_len, flash_result_data(0:flash_result_len))
+        memcpy(auth_command(12), flash_result_data(0), 15)
+
+        # Password
+        call flash_ps_load(FLASH_PS_KEY_PASSWORD)(result, flash_result_len, flash_result_data(0:flash_result_len))
+        memcpy(auth_command(31), flash_result_data(0), 15)
+
+        call endpoint_send(endpoint, 50, auth_command(:))(result, result_endpoint)
         if result = 0 then
             call endpoint_send(0, 16, "[DBG]auth sent\r\n")
         else
@@ -128,7 +135,7 @@ event tcpip_dns_configuration(index, address)
     end if
     auth_sent = 1
     if connected = 1 then
-        call flash_ps_load(FLASH_PS_KEY_APPL_STR1)(result, flash_result_len, flash_result_data(0:flash_result_len))
+        call flash_ps_load(FLASH_PS_KEY_CLIENT_MODE_ENDPOINT)(result, flash_result_len, flash_result_data(0:flash_result_len))
 
         call endpoint_send(0 , 30, "[DBG]tcpip_dns_gethostbyname: ")
         call endpoint_send(0, flash_result_len, flash_result_data(0:flash_result_len))

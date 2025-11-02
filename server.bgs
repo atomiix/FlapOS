@@ -1,5 +1,9 @@
 const MESSAGE_DATA() = "message="
 
+const base_ssid_name() = "FlapOS_AP_"
+const base_ssid_name_len = 10
+dim ssid_name(20)
+
 dim message(85)
 dim message_len
 
@@ -18,9 +22,14 @@ end
 
 export procedure start_ap_mode()
     call endpoint_send(0, 20, "[DBG]start ap mode\r\n")
+    call flash_ps_load(FLASH_PS_KEY_SERIAL_NUMBER)(result, flash_result_len, flash_result_data(0:flash_result_len))
     call tcpip_configure(192.168.1.1, 255.255.255.0, 192.168.1.1, 0)
     call system_set_max_power_saving_state(0)
-    call sme_start_ap_mode(1, 0, 9, "FlapOS_AP")
+    memcpy(ssid_name(0), base_ssid_name(0), base_ssid_name_len)
+
+    # remove FLP1- from serial number
+    memcpy(ssid_name(10), flash_result_data(5), flash_result_len - 5)
+    call sme_start_ap_mode(1, 0, base_ssid_name_len + flash_result_len - 5, ssid_name(:))
 end
 
 # event sme_ap_mode_started

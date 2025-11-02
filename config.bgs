@@ -1,3 +1,8 @@
+export const FLASH_PS_KEY_SERIAL_NUMBER = $8001
+export const FLASH_PS_KEY_PASSWORD = $8002
+export const FLASH_PS_KEY_APP_MODE = $8100
+export const FLASH_PS_KEY_CLIENT_MODE_ENDPOINT = $8101
+
 const API_STORE_MODE = 0
 const API_STORE_SSID = 1
 const API_STORE_PASSWORD = 2
@@ -19,6 +24,9 @@ const STORE_PASSWORD_PATH_LEN = 9
 const STORE_ENDPOINT_PATH() = "/endpoint"
 const STORE_ENDPOINT_PATH_LEN = 9
 
+const base_ssid_name() = "FlapOS_"
+dim ssid_name(17)
+
 dim scan_result_index
 dim selected_mode
 dim while_counter
@@ -28,9 +36,12 @@ dim handled
 dim should_reset
 
 export procedure start_conf_mode()
+    call flash_ps_load(FLASH_PS_KEY_SERIAL_NUMBER)(result, flash_result_len, flash_result_data(0:flash_result_len))
     call tcpip_configure(192.168.1.1, 255.255.255.0, 192.168.1.1, 0)
     call system_set_max_power_saving_state(0)
-    call sme_start_ap_mode(1, 0, 6, "FlapOS")
+    memcpy(ssid_name(0), base_ssid_name(0), 7)
+    memcpy(ssid_name(7), flash_result_data(5), flash_result_len - 5)
+    call sme_start_ap_mode(1, 0, 7 + flash_result_len - 5, ssid_name(:))
 end
 
 event sme_scanned(status)
@@ -72,7 +83,7 @@ end
 procedure handle_conf_request(request, path_len, path_data())
     if path_len = STORE_MODE_PATH_LEN && memcmp(path_data(0), STORE_MODE_PATH(0), path_len) then
         call util_atoi(1, request_data(0:1))(selected_mode)
-        call flash_ps_save(FLASH_PS_KEY_APPL_NUM1, 1, selected_mode)(result)
+        call flash_ps_save(FLASH_PS_KEY_APP_MODE, 1, selected_mode)(result)
         handled = 1
         should_reset = 1
     end if
@@ -92,7 +103,7 @@ procedure handle_conf_request(request, path_len, path_data())
     end if
 
     if path_len = STORE_ENDPOINT_PATH_LEN && memcmp(path_data(0), STORE_ENDPOINT_PATH(0), path_len) then
-        call flash_ps_save(FLASH_PS_KEY_APPL_STR1, request_data_len, request_data(0:request_data_len))
+        call flash_ps_save(FLASH_PS_KEY_CLIENT_MODE_ENDPOINT, request_data_len, request_data(0:request_data_len))
         handled = 1
     end if
 
