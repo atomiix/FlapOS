@@ -18,6 +18,7 @@ export procedure sta_sme_connected(status, hw_interface, bssid)
     call endpoint_send(0 , 24, "[DBG]sta sme connected\r\n")
     call https_add_path(1, 1, "/")
     call https_enable(1, 0, 0)
+    call start_status_notification(LED_GREEN, INTERVAL_CONNECTED)
 end
 
 export procedure start_ap_mode()
@@ -37,6 +38,7 @@ export procedure server_sme_ap_mode_started(hw_interface)
     call endpoint_send(0, 22, "[DBG]ap mode started\r\n")
     call https_add_path(1, 1, "/")
     call https_enable(1, 1, 0)
+    call start_status_notification(LED_GREEN, INTERVAL_CONNECTED)
 end
 
 procedure handle_request()

@@ -67,6 +67,7 @@ export procedure config_sme_ap_mode_started(hw_interface)
     call flash_ps_save(FLASH_PS_KEY_DNSS_ANY_URL, 1, 1)
     call https_enable(1, 1, 1)
     call endpoint_send(0, 22, "[DBG]AP mode started\r\n")
+    call start_status_notification(LED_ORANGE, INTERVAL_CONNECTED)
 end
 
 procedure handle_ssids_request(request)

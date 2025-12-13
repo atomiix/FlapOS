@@ -1,0 +1,29 @@
+export const INTERVAL_CONNECTED = 0
+export const INTERVAL_CONNECTING = 500
+export const LED_ORANGE = $8000
+export const LED_GREEN = $2000
+export const LED_BLUE = $1000
+
+dim pin_status
+dim pin_index
+dim pin_interval
+
+export procedure next_status_notification()
+    pin_status = pin_status ^ 1
+    if pin_status = 1 || pin_interval = 0 then
+        call hardware_io_port_write(1, pin_index, $0000)
+    else
+        call hardware_io_port_write(1, pin_index, pin_index)
+    end if
+
+    if pin_interval > 0 then
+        call hardware_set_soft_timer(pin_interval, HANDLE_STATUS_NOTIFICATION, 1)
+    end if
+end
+
+export procedure start_status_notification(pin, interval)
+    pin_index = pin
+    pin_interval = interval
+    pin_status = 0
+    call next_status_notification()
+end

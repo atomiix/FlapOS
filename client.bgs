@@ -7,6 +7,7 @@ dim ip_address_len
 dim endpoint_ip(4)
 dim result_endpoint
 dim connected
+dim server_up
 dim auth_sent
 dim debug(32)
 dim auth_command(50)
@@ -15,7 +16,9 @@ dim while_counter
 # event sme_connected
 export procedure cli_sme_connected(status, hw_interface, bssid)
     call endpoint_send(0 , 24, "[DBG]cli sme connected\r\n")
+    call start_status_notification(LED_GREEN, INTERVAL_CONNECTING)
     connected = 1
+    server_up = 0
 end
 
 export procedure cli_sme_disconnected(reason, hw_interface)
@@ -63,6 +66,8 @@ event endpoint_data(endpoint, data_len, data_data)
         end if
         if data_data(4:4) = ok_type then
             call endpoint_send(0, 18, "[DBG]ok received\r\n")
+            call start_status_notification(LED_GREEN, INTERVAL_CONNECTED)
+            server_up = 1
         end if
     end if
     if data_len = 15 && data_data(4:4) = set_counter_value_type then
@@ -91,12 +96,16 @@ event endpoint_status(endpoint, type, streaming, destination, active)
     call endpoint_send(0, flash_result_len, debug(0:flash_result_len))
     call endpoint_send(0, 2, "\r\n")
 
-    if type = 128 then
+    if type = 128 then # type 128 = endpoint_wait_close
         call endpoint_close(endpoint)
         call tcpip_tcp_connect(ip_address(0:4), 443, -1)
+        if server_up = 1 then
+            call start_status_notification(LED_GREEN, INTERVAL_CONNECTING)
+            server_up = 0
+        end if
     end if
 
-    if type = 4 && active = 1 then
+    if type = 4 && active = 1 then # type 4 = endpoint_tcp
         auth_command(0:4) = $2e000000 # message length
         auth_command(4:4) = $05000000 # message type
         auth_command(8:4) = $0F000000 # serial length

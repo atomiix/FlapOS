@@ -2,6 +2,13 @@ const VERSION() = "1.0.0"
 const WIFI_MODE_STA =  1
 const WIFI_MODE_AP = 2
 
+const RESET_DELAY = 3000
+
+const HANDLE_MOTOR_RUN = 0
+const HANDLE_MOTOR_STOP = 1
+const HANDLE_RESET_PUSH = 2
+export const HANDLE_STATUS_NOTIFICATION = 3
+
 export const APP_MODE_CONFIG = 0
 export const APP_MODE_AP = 1
 export const APP_MODE_STA = 2
@@ -34,6 +41,7 @@ export dim result
 export dim flash_result_len
 export dim flash_result_data(255)
 
+import "leds.bgs"
 import "config.bgs"
 
 procedure init_motors()
@@ -50,7 +58,7 @@ end
 
 export procedure run()
     motor_index = 0
-    call hardware_set_soft_timer(25, 0, 1)
+    call hardware_set_soft_timer(25, HANDLE_MOTOR_RUN, 1)
 end
 
 procedure show_info()
@@ -172,13 +180,22 @@ procedure run_motor(index)
     end if
 end
 
+procedure check_reset()
+    call hardware_io_port_read(3, $0001)(result, port, data) # read reset button
+    if data = 0 then
+        call endpoint_send(0, 19, "[DBG]Resetting...\r\n")
+        call flash_ps_save(FLASH_PS_KEY_APP_MODE, 1, APP_MODE_CONFIG)
+        call system_reset(0)
+    end if
+end
+
 event hardware_soft_timer(handle)
-    if handle = 0 then
+    if handle = HANDLE_MOTOR_RUN then
         if memcmp(targets(0), positions(0), 7) != 1 then
             if motor_index = 0 then
-                call hardware_set_soft_timer(25, 1, 1)
+                call hardware_set_soft_timer(25, HANDLE_MOTOR_STOP, 1)
             else
-                call hardware_set_soft_timer(20, 1, 1)
+                call hardware_set_soft_timer(20, HANDLE_MOTOR_STOP, 1)
             end if
         end if
         call run_motor(motor_index)
@@ -186,9 +203,16 @@ event hardware_soft_timer(handle)
         if motor_index = 7 then
             motor_index = 0
         end if
-    else
+    end if
+    if handle = HANDLE_MOTOR_STOP then
         call turn_motors_off()
-        call hardware_set_soft_timer(5, 0, 1)
+        call hardware_set_soft_timer(5, HANDLE_MOTOR_RUN, 1)
+    end if
+    if handle = HANDLE_RESET_PUSH then
+        call check_reset()
+    end if
+    if handle = HANDLE_STATUS_NOTIFICATION then
+        call next_status_notification()
     end if
 end
 
@@ -214,12 +238,15 @@ end
 
 event sme_wifi_is_on(state)
     if mode = APP_MODE_CLI || mode = APP_MODE_STA then
+        call start_status_notification(LED_BLUE, INTERVAL_CONNECTING)
         call connect_to_ssid()
     end if
     if mode = APP_MODE_AP then
+        call start_status_notification(LED_BLUE, INTERVAL_CONNECTING)
         call start_ap_mode()
     end if
     if mode = APP_MODE_CONFIG then
+        call start_status_notification(LED_ORANGE, INTERVAL_CONNECTING)
         call sme_start_ssid_scan(0, "")
     end if
 end
@@ -235,6 +262,7 @@ end
 
 event sme_connected(status, hw_interface, bssid)
     call endpoint_send(0, 20, "[DBG]sme connected\r\n")
+    call start_status_notification(LED_BLUE, INTERVAL_CONNECTED)
     if mode = APP_MODE_STA then
         call sta_sme_connected(status, hw_interface, bssid(0:6))
     end if
@@ -282,8 +310,7 @@ end
 event hardware_external_interrupt(irq, interrupt)
     if irq = 0 then
         call endpoint_send(0, 20, "[DBG]Reset pressed\r\n")
-        call flash_ps_save(FLASH_PS_KEY_APP_MODE, 1, APP_MODE_CONFIG)
-        call system_reset(0)
+        call hardware_set_soft_timer(RESET_DELAY, HANDLE_RESET_PUSH, 1)
     else
         call endpoint_send(0, 18, "[DBG]WPS pressed\r\n")
     end if
