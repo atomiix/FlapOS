@@ -11,9 +11,9 @@ dim pin_interval
 export procedure next_status_notification()
     pin_status = pin_status ^ 1
     if pin_status = 1 || pin_interval = 0 then
-        call hardware_io_port_write(1, pin_index, $0000)
+        call hardware_io_port_write(1, $B000, $B000 ^ pin_index)
     else
-        call hardware_io_port_write(1, pin_index, pin_index)
+        call hardware_io_port_write(1, $B000, $B000)
     end if
 
     if pin_interval > 0 then
