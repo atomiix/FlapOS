@@ -54,8 +54,8 @@ procedure init_motors()
     positions(4:3) = $808080
     targets(0:4) = $00000000
     targets(4:3) = $000000
-    previous_reads(0:4) = $00000000
-    previous_reads(4:3) = $000000
+    previous_reads(0:4) = $08102040
+    previous_reads(4:3) = $010204
 end
 
 export procedure run()
@@ -175,7 +175,7 @@ procedure run_motor(index)
     call turn_motor_ons(index)
     motor_ons(index:1) = 1
 
-    if positions(index:1) ^ $80 then
+    if positions(index:1) ^ $80 then # increment position only if position 0 is known
         positions(index:1) = positions(index:1) + $0001
     end if
 end
