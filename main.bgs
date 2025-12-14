@@ -3,11 +3,13 @@ const WIFI_MODE_STA =  1
 const WIFI_MODE_AP = 2
 
 const RESET_DELAY = 3000
+const RECONNECT_DELAY = 5000
 
 const HANDLE_MOTOR_RUN = 0
 const HANDLE_MOTOR_STOP = 1
 const HANDLE_RESET_PUSH = 2
-export const HANDLE_STATUS_NOTIFICATION = 3
+const HANDLE_RECONNECT = 3
+export const HANDLE_STATUS_NOTIFICATION = 4
 
 export const APP_MODE_CONFIG = 0
 export const APP_MODE_AP = 1
@@ -178,12 +180,16 @@ procedure run_motor(index)
     end if
 end
 
-procedure check_reset()
+procedure do_reset()
+    call endpoint_send(0, 19, "[DBG]Resetting...\r\n")
+    call flash_ps_save(FLASH_PS_KEY_APP_MODE, 1, APP_MODE_CONFIG)
+    call system_reset(0)
+end
+
+procedure reset_after_delay()
     call hardware_io_port_read(3, $0001)(result, port, data) # read reset button
     if data = 0 then
-        call endpoint_send(0, 19, "[DBG]Resetting...\r\n")
-        call flash_ps_save(FLASH_PS_KEY_APP_MODE, 1, APP_MODE_CONFIG)
-        call system_reset(0)
+        call do_reset()
     end if
 end
 
@@ -207,7 +213,10 @@ event hardware_soft_timer(handle)
         call hardware_set_soft_timer(5, HANDLE_MOTOR_RUN, 1)
     end if
     if handle = HANDLE_RESET_PUSH then
-        call check_reset()
+        call reset_after_delay()
+    end if
+    if handle = HANDLE_RECONNECT then
+        call sme_wifi_off()
     end if
     if handle = HANDLE_STATUS_NOTIFICATION then
         call next_status_notification()
@@ -249,6 +258,10 @@ event sme_wifi_is_on(state)
     end if
 end
 
+event sme_wifi_is_off(state)
+    call sme_wifi_on()
+end
+
 event sme_ap_mode_started(hw_interface)
     if mode = APP_MODE_CONFIG then
         call config_sme_ap_mode_started(hw_interface)
@@ -261,6 +274,7 @@ end
 event sme_connected(status, hw_interface, bssid)
     call endpoint_send(0, 20, "[DBG]sme connected\r\n")
     call start_status_notification(LED_BLUE, INTERVAL_CONNECTED)
+    call flash_ps_save(FLASH_PS_KEY_SETUP_SUCCESS, 1, 1)
     if mode = APP_MODE_STA then
         call sta_sme_connected(status, hw_interface, bssid(0:6))
     end if
@@ -271,7 +285,13 @@ end
 
 event sme_connect_failed(reason, hw_interface)
     call endpoint_send(0 , 25, "[DBG]sme_connect_failed\r\n")
-    # call start_sta_mode()
+    call flash_ps_load(FLASH_PS_KEY_SETUP_SUCCESS)(result, flash_result_len, flash_result_data(0:flash_result_len))
+    if flash_result_data(0:1) = 1
+        call start_status_notification(LED_ORANGE, INTERVAL_ERROR)
+        call hardware_set_soft_timer(RECONNECT_DELAY, HANDLE_RECONNECT, 1)
+    else
+        call do_reset()
+    end if
 end
 
 event sme_disconnected(reason, hw_interface)

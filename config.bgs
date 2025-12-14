@@ -2,6 +2,7 @@ export const FLASH_PS_KEY_SERIAL_NUMBER = $8001
 export const FLASH_PS_KEY_PASSWORD = $8002
 export const FLASH_PS_KEY_APP_MODE = $8100
 export const FLASH_PS_KEY_CLIENT_MODE_ENDPOINT = $8101
+export const FLASH_PS_KEY_SETUP_SUCCESS = $8102
 
 const API_STORE_MODE = 0
 const API_STORE_SSID = 1
@@ -150,6 +151,7 @@ export procedure config_https_api_request_finished(request)
     call https_api_response_finish()
 
     if should_reset = 1 then
+        call flash_ps_save(FLASH_PS_KEY_SETUP_SUCCESS, 1, 0)
         call system_reset(0)
     end if
 end
