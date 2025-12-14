@@ -145,7 +145,6 @@ procedure read_position(index)
 end
 
 procedure turn_motors_off()
-    call hardware_io_port_write(1, $9000, $9000) # led off
     call hardware_io_port_write(1, $0800, $0000) # turn off motor
     call hardware_io_port_write(3, $06f0, $0000) # turn off motors
 end
@@ -171,7 +170,6 @@ procedure run_motor(index)
         return
     end if
 
-    call hardware_io_port_write(1, $b000, $0000) # led on
     call turn_motor_ons(index)
     motor_ons(index:1) = 1
 
