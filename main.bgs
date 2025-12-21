@@ -283,12 +283,16 @@ event sme_connected(status, hw_interface, bssid)
     end if
 end
 
+procedure try_reconnect()
+    call start_status_notification(LED_ORANGE, INTERVAL_ERROR)
+    call hardware_set_soft_timer(RECONNECT_DELAY, HANDLE_RECONNECT, 1)
+end
+
 event sme_connect_failed(reason, hw_interface)
     call endpoint_send(0 , 25, "[DBG]sme_connect_failed\r\n")
     call flash_ps_load(FLASH_PS_KEY_SETUP_SUCCESS)(result, flash_result_len, flash_result_data(0:flash_result_len))
     if flash_result_data(0:1) = 1
-        call start_status_notification(LED_ORANGE, INTERVAL_ERROR)
-        call hardware_set_soft_timer(RECONNECT_DELAY, HANDLE_RECONNECT, 1)
+        call try_reconnect()
     else
         call do_reset()
     end if
@@ -299,6 +303,7 @@ event sme_disconnected(reason, hw_interface)
     if mode = APP_MODE_CLI
         call cli_sme_disconnected(reason, hw_interface)
     end if
+    call try_reconnect()
 end
 
 event https_api_request(request, method, resource_len, resource_data)

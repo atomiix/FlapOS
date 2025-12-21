@@ -22,10 +22,6 @@ export procedure cli_sme_connected(status, hw_interface, bssid)
 end
 
 export procedure cli_sme_disconnected(reason, hw_interface)
-    call util_itoa(reason)(flash_result_len, flash_result_data(0:flash_result_len))
-    call endpoint_send(0 , 11, "[DBG]reason ")
-    call endpoint_send(0, flash_result_len, flash_result_data(0:flash_result_len))
-    call endpoint_send(0, 2, "\r\n")
     connected = 0
 end
 
