@@ -2,6 +2,8 @@ const echo_type = $04000000
 const ok_type = $01000000
 const set_counter_value_type = $02000000
 
+const SERVER_TIMEOUT_DELAY = 90000
+
 dim ip_address(4)
 dim ip_address_len
 dim endpoint_ip(4)
@@ -23,6 +25,20 @@ end
 
 export procedure cli_sme_disconnected(reason, hw_interface)
     connected = 0
+end
+
+export procedure server_reconnect(endpoint)
+    call endpoint_close(endpoint)
+    call tcpip_tcp_connect(ip_address(0:4), 443, -1)
+    if server_up = 1 then
+        call start_status_notification(LED_GREEN, INTERVAL_CONNECTING)
+        server_up = 0
+    end if
+end
+
+export procedure server_timeout()
+    call endpoint_send(0, 18, "[DBG]server gone\r\n")
+    call server_reconnect(result_endpoint)
 end
 
 procedure debug_ip_addr(address)
@@ -79,6 +95,8 @@ event endpoint_data(endpoint, data_len, data_data)
         call endpoint_send(0, 2, "\r\n")
         call run()
     end if
+
+    call hardware_set_soft_timer(SERVER_TIMEOUT_DELAY, HANDLE_SERVER_TIMEOUT, 1)
 end
 
 event endpoint_status(endpoint, type, streaming, destination, active)
@@ -93,12 +111,7 @@ event endpoint_status(endpoint, type, streaming, destination, active)
     call endpoint_send(0, 2, "\r\n")
 
     if type = 128 then # type 128 = endpoint_wait_close
-        call endpoint_close(endpoint)
-        call tcpip_tcp_connect(ip_address(0:4), 443, -1)
-        if server_up = 1 then
-            call start_status_notification(LED_GREEN, INTERVAL_CONNECTING)
-            server_up = 0
-        end if
+        call server_reconnect(endpoint)
     end if
 
     if type = 4 && active = 1 then # type 4 = endpoint_tcp

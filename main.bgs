@@ -10,6 +10,7 @@ const HANDLE_MOTOR_STOP = 1
 const HANDLE_RESET_PUSH = 2
 const HANDLE_RECONNECT = 3
 export const HANDLE_STATUS_NOTIFICATION = 4
+export const HANDLE_SERVER_TIMEOUT = 5
 
 export const APP_MODE_CONFIG = 0
 export const APP_MODE_AP = 1
@@ -193,6 +194,9 @@ procedure reset_after_delay()
     end if
 end
 
+import "server.bgs"
+import "client.bgs"
+
 event hardware_soft_timer(handle)
     if handle = HANDLE_MOTOR_RUN then
         if memcmp(targets(0), positions(0), 7) != 1 then
@@ -221,10 +225,10 @@ event hardware_soft_timer(handle)
     if handle = HANDLE_STATUS_NOTIFICATION then
         call next_status_notification()
     end if
+    if handle = HANDLE_SERVER_TIMEOUT then
+        call server_timeout()
+    end if
 end
-
-import "server.bgs"
-import "client.bgs"
 
 procedure connect_to_ssid() 
     call endpoint_send(0, 27, "[DBG]conneting to ssid...\r\n")
