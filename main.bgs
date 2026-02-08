@@ -193,6 +193,9 @@ event tcpip_dns_configuration(index, address)
     if mode = APP_MODE_CLI then
         call cli_tcpip_dns_configuration(index, address)
     end if
+    if mode = APP_MODE_STA then
+        call server_tcpip_dns_configuration(index, address)
+    end if
 end
 
 event tcpip_dns_gethostbyname_result(dns_result, address, name_len, name_data)

@@ -56,6 +56,17 @@ export procedure server_sme_ap_mode_started(hw_interface)
     call start_status_notification(LED_GREEN, INTERVAL_CONNECTED)
 end
 
+# event tcpip_dns_configuration
+export procedure server_tcpip_dns_configuration(index, address)
+    if index = 0 then
+        return
+    end if
+
+    call flash_ps_load(FLASH_PS_KEY_SERIAL_NUMBER)(result, flash_result_len, flash_result_data(0:flash_result_len))
+    call tcpip_mdns_set_hostname(flash_result_len, flash_result_data(0:flash_result_len))
+    call tcpip_mdns_start()
+end
+
 # event https_api_request_finished
 export procedure server_https_api_request_finished(request)
     if request_method = HTTP_POST then
