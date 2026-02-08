@@ -9,18 +9,6 @@ dim message_len
 
 import "flaps.bgs"
 
-procedure start_server()
-    
-end
-
-# event sme_connected
-export procedure sta_sme_connected(status, hw_interface, bssid)
-    call endpoint_send(0 , 24, "[DBG]sta sme connected\r\n")
-    call https_add_path(1, 1, "/")
-    call https_enable(1, 0, 0)
-    call start_status_notification(LED_GREEN, INTERVAL_CONNECTED)
-end
-
 export procedure start_ap_mode()
     call endpoint_send(0, 20, "[DBG]start ap mode\r\n")
     call flash_ps_load(FLASH_PS_KEY_SERIAL_NUMBER)(result, flash_result_len, flash_result_data(0:flash_result_len))
@@ -31,14 +19,6 @@ export procedure start_ap_mode()
     # remove FLP1- from serial number
     memcpy(ssid_name(10), flash_result_data(5), flash_result_len - 5)
     call sme_start_ap_mode(1, 0, base_ssid_name_len + flash_result_len - 5, ssid_name(:))
-end
-
-# event sme_ap_mode_started
-export procedure server_sme_ap_mode_started(hw_interface)
-    call endpoint_send(0, 22, "[DBG]ap mode started\r\n")
-    call https_add_path(1, 1, "/")
-    call https_enable(1, 1, 0)
-    call start_status_notification(LED_GREEN, INTERVAL_CONNECTED)
 end
 
 procedure handle_request()
@@ -53,11 +33,27 @@ procedure handle_request()
 
         call endpoint_send(0, message_len, message(0:message_len))
         call endpoint_send(0, 2,"\r\n")
-        call get_index_for_flap(message_len, message(0:message_len))
+        call set_target_from_message(message_len, message(0:message_len))
         call run()
     else
         call endpoint_send(0, 24, "[DBG]message not found\r\n")
     end if
+end
+
+# event sme_connected
+export procedure server_sme_connected(status, hw_interface, bssid)
+    call endpoint_send(0 , 24, "[DBG]sta sme connected\r\n")
+    call https_add_path(1, 1, "/")
+    call https_enable(1, 0, 0)
+    call start_status_notification(LED_GREEN, INTERVAL_CONNECTED)
+end
+
+# event sme_ap_mode_started
+export procedure server_sme_ap_mode_started(hw_interface)
+    call endpoint_send(0, 22, "[DBG]ap mode started\r\n")
+    call https_add_path(1, 1, "/")
+    call https_enable(1, 1, 0)
+    call start_status_notification(LED_GREEN, INTERVAL_CONNECTED)
 end
 
 # event https_api_request_finished

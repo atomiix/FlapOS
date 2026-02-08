@@ -6,42 +6,13 @@ const SERVER_TIMEOUT_DELAY = 90000
 
 dim ip_address(4)
 dim ip_address_len
-dim endpoint_ip(4)
 dim result_endpoint
-dim connected
 dim server_up
-dim auth_sent
 dim debug(32)
 dim auth_command(50)
 dim while_counter
 
-# event sme_connected
-export procedure cli_sme_connected(status, hw_interface, bssid)
-    call endpoint_send(0 , 24, "[DBG]cli sme connected\r\n")
-    call start_status_notification(LED_GREEN, INTERVAL_CONNECTING)
-    connected = 1
-    server_up = 0
-end
-
-export procedure cli_sme_disconnected(reason, hw_interface)
-    connected = 0
-end
-
-export procedure server_reconnect(endpoint)
-    call endpoint_close(endpoint)
-    call tcpip_tcp_connect(ip_address(0:4), 443, -1)
-    if server_up = 1 then
-        call start_status_notification(LED_GREEN, INTERVAL_CONNECTING)
-        server_up = 0
-    end if
-end
-
-export procedure server_timeout()
-    call endpoint_send(0, 18, "[DBG]server gone\r\n")
-    call server_reconnect(result_endpoint)
-end
-
-procedure debug_ip_addr(address)
+procedure print_ip_addr(address)
     call util_itoa(address & $FF)(ip_address_len, debug(0:ip_address_len))
     call endpoint_send(0, ip_address_len, debug(0:ip_address_len))
     call endpoint_send(0, 1, ".")
@@ -60,55 +31,72 @@ procedure debug_ip_addr(address)
     call endpoint_send(0, 2, "\r\n")
 end
 
-event tcpip_dns_gethostbyname_result(dns_result, address, name_len, name_data)
+procedure server_reconnect(endpoint)
+    call endpoint_close(endpoint)
+    call print_ip_addr(ip_address(0:4))
+    call tcpip_tcp_connect(ip_address(0:4), 443, -1)
+    if server_up = 1 then
+        call start_status_notification(LED_GREEN, INTERVAL_CONNECTING)
+        server_up = 0
+    end if
+end
+
+export procedure server_timeout()
+    call endpoint_send(0, 18, "[DBG]server gone\r\n")
+    call server_reconnect(result_endpoint)
+end
+
+# event sme_connected
+export procedure cli_sme_connected(status, hw_interface, bssid)
+    call endpoint_send(0 , 24, "[DBG]cli sme connected\r\n")
+    call start_status_notification(LED_GREEN, INTERVAL_CONNECTING)
+    server_up = 0
+end
+
+# event tcpip_dns_configuration
+export procedure cli_tcpip_dns_configuration(index, address)
+    if index = 0 then
+        return
+    end if
+
+    call flash_ps_load(FLASH_PS_KEY_CLIENT_MODE_ENDPOINT)(result, flash_result_len, flash_result_data(0:flash_result_len))
+
+    call endpoint_send(0 , 30, "[DBG]tcpip_dns_gethostbyname: ")
+    call endpoint_send(0, flash_result_len, flash_result_data(0:flash_result_len))
+    call endpoint_send(0, 2, "\r\n")
+
+    call tcpip_dns_gethostbyname(flash_result_len, flash_result_data(0:flash_result_len))(result)
+    if result != 0 then
+        call util_itoa(result)(flash_result_len, flash_result_data(0:flash_result_len))
+        call endpoint_send(0 , 11, "[DBG]error ")
+        call endpoint_send(0, flash_result_len, flash_result_data(0:flash_result_len))
+        call endpoint_send(0, 2, "\r\n")
+    end if
+end
+
+# event tcpip_dns_gethostbyname_result
+export procedure cli_tcpip_dns_gethostbyname_result(dns_result, address, name_len, name_data)
     call endpoint_send(0 , 27, "[DBG]endpoint resolves to: ")
-    call debug_ip_addr(address)
+    call print_ip_addr(address)
 
     ip_address(0:4) = address
     call tcpip_tcp_connect(ip_address(0:4), 443, -1)
 end
 
-event endpoint_data(endpoint, data_len, data_data)
-    call endpoint_send(0, 20, "[DBG]endpoint data\r\n")
-
-    if data_len = 8 then
-        if data_data(4:4) = echo_type then
-            call endpoint_send(0, 20, "[DBG]echo received\r\n")
-            call endpoint_send(endpoint, data_len, data_data(0:data_len))
-        end if
-        if data_data(4:4) = ok_type then
-            call endpoint_send(0, 18, "[DBG]ok received\r\n")
-            call start_status_notification(LED_GREEN, INTERVAL_CONNECTED)
-            server_up = 1
-        end if
-    end if
-    if data_len = 15 && data_data(4:4) = set_counter_value_type then
-        call endpoint_send(0, 45, "[DBG]set_counter_value received\r\n[DBG]value: ")
-        memcpy(targets(0), data_data(8), 7)
-        while_counter = 0
-        while while_counter < 7
-            call util_itoa(targets(while_counter:1))(ip_address_len, debug(0:ip_address_len))
-            call endpoint_send(0, ip_address_len, debug(0:ip_address_len))
-            call endpoint_send(0, 1, " ")
-            while_counter = while_counter + 1
-        end while
-        call endpoint_send(0, 2, "\r\n")
-        call run()
-    end if
-
-    call hardware_set_soft_timer(SERVER_TIMEOUT_DELAY, HANDLE_SERVER_TIMEOUT, 1)
-end
-
-event endpoint_status(endpoint, type, streaming, destination, active)
+# event endpoint_status
+export procedure cli_endpoint_status(endpoint, type, streaming, destination, active)
     call endpoint_send(0, 22, "[DBG]endpoint_status\r\n")
     call endpoint_send(0, 14, "[DBG]enpoint: ")
     call util_itoa(endpoint)(flash_result_len, debug(0:flash_result_len))
     call endpoint_send(0, flash_result_len, debug(0:flash_result_len))
-    call endpoint_send(0, 2, "\r\n")
-    call endpoint_send(0, 11, "[DBG]type: ")
+    call endpoint_send(0, 8, ", type: ")
     call util_itoa(type)(flash_result_len, debug(0:flash_result_len))
     call endpoint_send(0, flash_result_len, debug(0:flash_result_len))
-    call endpoint_send(0, 2, "\r\n")
+    if active = 1 then
+        call endpoint_send(0, 13, ", active: 1\r\n")
+    else
+        call endpoint_send(0, 13, ", active: 0\r\n")
+    end if
 
     if type = 128 then # type 128 = endpoint_wait_close
         call server_reconnect(endpoint)
@@ -141,30 +129,34 @@ event endpoint_status(endpoint, type, streaming, destination, active)
     end if
 end
 
-event tcpip_configuration(address, netmask, gateway, use_dhcp)
-    auth_sent = 0
-    call endpoint_send(0, 26, "[DBG]tcpip_configuration\r\n")
-end
+#event endpoint_data
+export procedure cli_endpoint_data(endpoint, data_len, data_data())
+    call endpoint_send(0, 20, "[DBG]endpoint data\r\n")
 
-event tcpip_dns_configuration(index, address)
-    call endpoint_send(0, 30, "[DBG]tcpip_dns_configuration\r\n")
-    if auth_sent = 1 then
-        return
-    end if
-    auth_sent = 1
-    if connected = 1 then
-        call flash_ps_load(FLASH_PS_KEY_CLIENT_MODE_ENDPOINT)(result, flash_result_len, flash_result_data(0:flash_result_len))
-
-        call endpoint_send(0 , 30, "[DBG]tcpip_dns_gethostbyname: ")
-        call endpoint_send(0, flash_result_len, flash_result_data(0:flash_result_len))
-        call endpoint_send(0, 2, "\r\n")
-
-        call tcpip_dns_gethostbyname(flash_result_len, flash_result_data(0:flash_result_len))(result)
-        if result != 0 then
-            call util_itoa(result)(flash_result_len, flash_result_data(0:flash_result_len))
-            call endpoint_send(0 , 11, "[DBG]error ")
-            call endpoint_send(0, flash_result_len, flash_result_data(0:flash_result_len))
-            call endpoint_send(0, 2, "\r\n")
+    if data_len = 8 then
+        if data_data(4:4) = echo_type then
+            call endpoint_send(0, 20, "[DBG]echo received\r\n")
+            call endpoint_send(endpoint, data_len, data_data(0:data_len))
+        end if
+        if data_data(4:4) = ok_type then
+            call endpoint_send(0, 18, "[DBG]ok received\r\n")
+            call start_status_notification(LED_GREEN, INTERVAL_CONNECTED)
+            server_up = 1
         end if
     end if
+    if data_len = 15 && data_data(4:4) = set_counter_value_type then
+        call endpoint_send(0, 45, "[DBG]set_counter_value received\r\n[DBG]value: ")
+        memcpy(targets(0), data_data(8), 7)
+        while_counter = 0
+        while while_counter < 7
+            call util_itoa(targets(while_counter:1))(ip_address_len, debug(0:ip_address_len))
+            call endpoint_send(0, ip_address_len, debug(0:ip_address_len))
+            call endpoint_send(0, 1, " ")
+            while_counter = while_counter + 1
+        end while
+        call endpoint_send(0, 2, "\r\n")
+        call run()
+    end if
+
+    call hardware_set_soft_timer(SERVER_TIMEOUT_DELAY, HANDLE_SERVER_TIMEOUT, 1)
 end

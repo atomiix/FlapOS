@@ -128,7 +128,6 @@ const FLAP_AMPERSAND_ALT() = "&"
 dim message_index
 dim buffer_index
 dim buffer(7)
-dim found
 
 procedure lead_char_to_flap_index(lead_message_len, lead_message())
     if memcmp(lead_message(0), LEAD_BLANK(0), 5) then
@@ -735,7 +734,7 @@ procedure char_to_flap_index(message_len, message())
     message_index = message_index + 1
 end
 
-export procedure get_index_for_flap(message_len, message())
+export procedure set_target_from_message(message_len, message())
     message_index = 0
     buffer_index = 0
     buffer(0:4) = $00000000

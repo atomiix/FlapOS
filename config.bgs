@@ -45,10 +45,6 @@ export procedure start_conf_mode()
     call sme_start_ap_mode(1, 0, 7 + flash_result_len - 5, ssid_name(:))
 end
 
-event sme_scanned(status)
-    call start_conf_mode()
-end
-
 procedure method_not_allowed(allowed_method)
     response(0:33) = "HTTP/1.1 405 Method Not Allowed\r\n"
     if allowed_method = HTTP_POST then
@@ -58,17 +54,6 @@ procedure method_not_allowed(allowed_method)
         response(33:14) = "Allow: GET\r\n\r\n"
         response_len = 47
     end if
-end
-
-# event sme_ap_mode_started
-export procedure config_sme_ap_mode_started(hw_interface)
-    call https_add_path(0, 1, "/")
-    call https_add_path(1, 5, "/api/")
-    call flash_ps_save(FLASH_PS_KEY_DNSS_URL, CONFIG_DOMAIN_LEN, CONFIG_DOMAIN(0:CONFIG_DOMAIN_LEN))
-    call flash_ps_save(FLASH_PS_KEY_DNSS_ANY_URL, 1, 1)
-    call https_enable(1, 1, 1)
-    call endpoint_send(0, 22, "[DBG]AP mode started\r\n")
-    call start_status_notification(LED_ORANGE, INTERVAL_CONNECTED)
 end
 
 procedure handle_ssids_request(request)
@@ -117,10 +102,19 @@ procedure handle_conf_request(request, path_len, path_data())
     response_len = 19
 end
 
+# event sme_ap_mode_started
+export procedure config_sme_ap_mode_started(hw_interface)
+    call https_add_path(0, 1, "/")
+    call https_add_path(1, 5, "/api/")
+    call flash_ps_save(FLASH_PS_KEY_DNSS_URL, CONFIG_DOMAIN_LEN, CONFIG_DOMAIN(0:CONFIG_DOMAIN_LEN))
+    call flash_ps_save(FLASH_PS_KEY_DNSS_ANY_URL, 1, 1)
+    call https_enable(1, 1, 1)
+    call endpoint_send(0, 22, "[DBG]AP mode started\r\n")
+    call start_status_notification(LED_ORANGE, INTERVAL_CONNECTED)
+end
+
 # event https_api_request_finished
 export procedure config_https_api_request_finished(request)
-    call endpoint_send(0, 23, "[DBG]request finished\r\n")
-    
     handled = 0
     should_reset = 0
     if request_resource_len = RESOURCE_SSIDS_LEN && memcmp(request_resource(0), RESOURCE_SSIDS(0), RESOURCE_SSIDS_LEN) then
@@ -156,7 +150,13 @@ export procedure config_https_api_request_finished(request)
     end if
 end
 
-event sme_scan_sort_result(bssid, channel, rssi, snr, secure, ssid_len, ssid_data)
+# event sme_scanned
+export procedure config_sme_scanned(status)
+    call start_conf_mode()
+end
+
+# event sme_scan_sort_result
+export procedure config_sme_scan_sort_result(channel, rssi, snr, secure, ssid_len, ssid_data())
     # filtering empty SSID
     if ssid_len = 0 then
         return
@@ -189,7 +189,8 @@ event sme_scan_sort_result(bssid, channel, rssi, snr, secure, ssid_len, ssid_dat
     scan_result_index = scan_result_index + 1
 end
 
-event sme_scan_sort_finished()
+# event sme_scan_sort_finished
+export procedure config_sme_scan_sort_finished()
     call https_api_response(ssid_request, 1, "]")
     call https_api_response_finish()
 end
