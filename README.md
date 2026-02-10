@@ -31,6 +31,10 @@ wine bgbuild.exe project.xml
 
 ### Using the webflasher (prefered method)
 
+> [!NOTE]
+> A Serial-to-TTL converter is required to flash your device using this method<br>
+> You can get those cheap on [Amazon](https://amzn.eu/d/09ei6jMb)
+
 The webflasher is available at [https://atomiix.github.io/FlapOS](https://atomiix.github.io/FlapOS).
 You can follow the instructions here.
 
