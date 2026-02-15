@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{# {% block styles %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ base_url }}/css/style.css" media="screen"/>
+{% endblock %} #}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ base_url }}/js/bgapi.js"></script>
+  <script src="{{ base_url }}/js/main.js"></script>
+  <script>
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'n') {
+        e.stopPropagation();
+      }
+    });
+  </script>
+{% endblock %}

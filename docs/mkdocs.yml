@@ -1,0 +1,73 @@
+site_name: FlapOS
+docs_dir: mkdocs
+repo_url: https://github.com/atomiix/FlapOS
+repo_name: atomiix/FlapOS
+
+nav:
+  - Home: index.md
+  - Usage:
+    - Setup: usage/setup.md
+    - API Documentation: usage/api-documentation.md
+    - Troubleshooting: usage/troubleshooting.md
+  - Hardware:
+    - Motherboard: hardware/motherboard.md
+    - Pinout: hardware/pinout.md
+  - Web Flasher: web-flasher/
+
+theme:
+  name: material
+  custom_dir: overrides
+  icon:
+    logo: material/numeric-0-box
+  font:
+    text: Zalando Sans
+    code: Google Sans Code
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to system preference
+
+    - media: "(prefers-color-scheme: light)"
+      primary: blue
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    - media: "(prefers-color-scheme: dark)"
+      primary: blue
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+
+  features:
+    - navigation.tabs
+    - navigation.path
+    - navigation.indexes
+    - navigation.footer
+    - content.code.copy
+    - content.code.select
+
+extra_css:
+  - css/style.css
+
+markdown_extensions:
+  - attr_list
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+            - name: console
+              class: console
+              format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+
+copyright: Copyright &copy; 2026 Thomas Baccelli
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/atomiix

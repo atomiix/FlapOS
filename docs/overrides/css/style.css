@@ -1,0 +1,90 @@
+
+.md-logo h1 {
+  background-color: var(--primary-color);
+  color: white;
+  margin: 0;
+  padding: 0;
+  font-size: 17px;
+  line-height: normal;
+  text-align: center;
+}
+
+.md-logo h1 span {
+  display: inline-block;
+  margin: auto 1px auto 0;
+  width: 24px;
+  padding: 4px 0;
+  color: white;
+  background-color: #333;
+  border-radius: 5px;
+  position: relative;
+}
+
+.md-logo h1 span::after{
+  display: block;
+  content: ' ';
+  width: 100%;
+  height: 1px;
+  background-color: #333;
+  top: 50%;
+  position: absolute;
+}
+
+.md-header__title > * {
+  display: none;
+}
+
+.md-sidebar .md-nav__title {
+  font-size: 0;
+  line-height: 0;
+  height: auto;
+}
+
+#installBtn {
+  line-height: 1.6;
+  font-size: .8rem;
+}
+
+#installBtn:disabled {
+  background-color: #6a869d;
+  border-color: #6a869d;
+  cursor: normal;
+}
+
+select {
+  height: 1.6em;
+  box-sizing: content-box;
+  background-color: var(--md-primary-fg-color);
+  color: var(--md-accent-bg-color);
+  font-weight: 700;
+  border: .1rem solid var(--md-primary-fg-color);
+  font-size: .8rem;
+  padding: .625em 2em;
+  border-radius: .1rem;
+}
+
+select:hover, select:focus {
+  background-color: var(--md-accent-fg-color);
+  border-color: var(--md-accent-fg-color);
+  color: var(--md-accent-bg-color);
+}
+
+#wiring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, .4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#wiring img {
+    background-color: #fefefe;
+    padding: 4px;
+    border-radius: 4px;
+    width: 800px;
+    z-index: 1000;
+}
