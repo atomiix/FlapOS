@@ -43,4 +43,8 @@
 |--------------------------|---------------|----------------------------------------|------------------|
 | ICSP (PicKit3 connector) | P200          | Pin1 is the square one (on the right)  | ![](./ICSP.png)  |
 | uart0                    | P201          | (From top to bottom) GND, RX, TX, 3.3V | ![](./uart0.png) |
-| uart1                    | P204          | (From left to right) RX, TX            | ![](./uart1.png) |
+| uart1                    | P204          | (From left to right) RX, TX, CTS       | ![](./uart1.png) |
+
+!!! note "uart1 flow control"
+
+    uart1 is configured with hardware handshake (`project.xml`), so the module only transmits BGAPI replies while its CTS line is asserted. On at least some boards (verified on an SR-02A) CTS floats when nothing drives it, and the module then receives commands but never answers. If BGAPI stays silent on P204, ground the third hole (any board ground, e.g. P102) while flashing or debugging, and remove that ground for normal operation.

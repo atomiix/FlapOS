@@ -9,6 +9,7 @@ nav:
     - Setup: usage/setup.md
     - API Documentation: usage/api-documentation.md
     - Troubleshooting: usage/troubleshooting.md
+    - Flashing a crashed stock unit: usage/flashing-a-crashed-stock-unit.md
   - Hardware:
     - Motherboard: hardware/motherboard.md
     - Pinout: hardware/pinout.md

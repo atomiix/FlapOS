@@ -12,6 +12,10 @@
     
     This feature is not implemented in the current version of the firmware. See [Setup](./setup.md) to know how to connect to your Wi-Fi network.
 
+??? note "The FlapOS Wi-Fi network is visible but nothing can join it"
+
+    The Wi-Fi radio keeps broadcasting the network name in hardware even if the firmware has stopped running, so a visible SSID does not prove the device is alive. If every join attempt fails and the status led is off, power-cycle the Flapit (unplug, wait ~30 seconds, plug back in) and wait for the led before retrying.
+
 
 ## LEDs signification
 
