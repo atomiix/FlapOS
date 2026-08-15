@@ -45,6 +45,11 @@
 | uart0                    | P201          | (From top to bottom) GND, RX, TX, 3.3V | ![](./uart0.png) |
 | uart1                    | P204          | (From left to right) RX, TX, CTS       | ![](./uart1.png) |
 
-!!! note "uart1 flow control"
+!!! warning "uart1 flow control: keep CTS grounded"
 
-    uart1 is configured with hardware handshake (`project.xml`), so the module only transmits BGAPI replies while its CTS line is asserted. On at least some boards (verified on an SR-02A) CTS floats when nothing drives it, and the module then receives commands but never answers. If BGAPI stays silent on P204, ground the third hole (any board ground, e.g. P102) while flashing or debugging, and remove that ground for normal operation.
+    uart1 is configured with hardware handshake (`project.xml`), so the module only transmits BGAPI replies while its CTS line is asserted. On at least some boards (verified on an SR-02A) CTS floats when nothing drives it. Two consequences:
+
+    - **While flashing or debugging**, a floating CTS means the module receives your commands but never answers, which looks exactly like a dead port. If BGAPI stays silent on P204, ground the third hole.
+    - **During normal operation**, a floating CTS can hang FlapOS. The symptom is misleading: the Wi-Fi stack keeps running, so the device still beacons its SSID and still hands out DHCP addresses, and the status led stays solid green, but the web server never answers a request. It reads as a network problem and is actually a stalled application.
+
+    On the unit where this was found, the fault was intermittent for weeks. A hand held an inch above the board was enough to trigger it, as was the vibration of the flaps turning. Cutting the debug wires off did not fix it; only a permanent solder link from the third hole to ground did. If your board shows unexplained hangs, ground that pin and leave it grounded.

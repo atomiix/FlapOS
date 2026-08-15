@@ -16,7 +16,9 @@ Same wiring as the Web Flasher: uart1 on P204 (see [Pinout](../hardware/pinout.m
 
 !!! warning "Ground P204 hole 3 to hear the chip"
 
-    uart1 uses hardware flow control. The third hole of P204 is the module's CTS line: if it floats, the module receives your commands but can never transmit a reply, which looks exactly like a dead port. Ground hole 3 (any board ground works, e.g. P102) while talking BGAPI. Remove that ground for normal operation afterwards.
+    uart1 uses hardware flow control. The third hole of P204 is the module's CTS line: if it floats, the module receives your commands but can never transmit a reply, which looks exactly like a dead port. Ground hole 3 (any board ground works, e.g. P102) while talking BGAPI.
+
+    Leave it grounded afterwards. A floating CTS can also hang FlapOS during normal operation, and it is worth reading the [Pinout](../hardware/pinout.md) note before you disconnect anything.
 
 ## The boot-window method
 
