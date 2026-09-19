@@ -5,7 +5,7 @@
     </scripting>
     <hardware>
         <uart channel="0" baud="115200" api="false" />
-        <uart channel="1" baud="115200" api="true" handshake="True" />
+        <uart channel="1" baud="115200" api="true" />
         <sleep interrupts="0x1"/>
     </hardware>
     <files>
