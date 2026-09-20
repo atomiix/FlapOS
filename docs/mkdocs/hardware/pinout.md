@@ -45,11 +45,13 @@
 | uart0                    | P201          | (From top to bottom) GND, RX, TX, 3.3V | ![](./uart0.png) |
 | uart1                    | P204          | (From left to right) RX, TX, CTS       | ![](./uart1.png) |
 
-!!! warning "uart1 flow control: keep CTS grounded"
+!!! note "uart1 flow control (FlapOS 1.0.0 and earlier)"
 
-    uart1 is configured with hardware handshake (`project.xml`), so the module only transmits BGAPI replies while its CTS line is asserted. On at least some boards (verified on an SR-02A) CTS floats when nothing drives it. Two consequences:
+    Up to FlapOS 1.0.0, `project.xml` configured uart1 with `handshake="True"`, so the module only transmitted BGAPI replies while its CTS line (the third hole of P204) was asserted. Since 1.0.1 the handshake is off, and this note only matters if you run an older build.
 
-    - **While flashing or debugging**, a floating CTS means the module receives your commands but never answers, which looks exactly like a dead port. If BGAPI stays silent on P204, ground the third hole.
-    - **During normal operation**, a floating CTS can hang FlapOS. The symptom is misleading: the Wi-Fi stack keeps running, so the device still beacons its SSID and still hands out DHCP addresses, and the status led stays solid green, but the web server never answers a request. It reads as a network problem and is actually a stalled application.
+    On at least one SR-02A board that line floats when nothing drives it, with two consequences on 1.0.0:
 
-    On the unit where this was found, the fault was intermittent for weeks. A hand held an inch above the board was enough to trigger it, as was the vibration of the flaps turning. Cutting the debug wires off did not fix it; only a permanent solder link from the third hole to ground did. If your board shows unexplained hangs, ground that pin and leave it grounded.
+    - **While debugging over P204**, the module receives commands but never answers, which looks exactly like a dead port.
+    - **During normal operation**, the FlapOS application can hang while the Wi-Fi stack keeps running: the SSID still beacons, DHCP still hands out addresses, and the status led stays solid green, but the web server never answers. It reads as a network problem and is actually a stalled application. On that unit it was intermittent for weeks; a hand held an inch above the board, or the vibration of the flaps turning, was enough to trigger it.
+
+    Either fix works: update to 1.0.1 or later, or solder a short link from the third hole to ground and leave it there. The author measured that line steady low on his own board, so this may only affect some units.
